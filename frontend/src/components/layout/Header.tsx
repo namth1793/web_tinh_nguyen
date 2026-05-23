@@ -2,29 +2,16 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Sun, Moon, Menu, Bell, LogOut, User, Settings, X, ChevronDown } from 'lucide-react';
+import { Sun, Moon, Menu, LogOut, User, Settings, ChevronDown } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 import { useApp } from '@/context/ThemeContext';
 
-const topNav = [
-  { label: 'Trang chủ', href: '/dashboard' },
-  { label: 'Thi theo chủ đề', href: '/quiz' },
-  { label: 'Thi theo trình độ', href: '/quiz/level' },
-  { label: 'Bài thi của tôi', href: '/profile' },
-  { label: 'Bảng xếp hạng', href: '/ranking' },
-  { label: 'Hướng dẫn', href: '/guide' },
-];
-
 export default function Header() {
   const { theme, setTheme } = useTheme();
   const { user, logout, setSidebarOpen, isLoggedIn } = useApp();
-  const pathname = usePathname();
-  const [showSearch, setShowSearch] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
 
   return (
     <header
@@ -63,78 +50,11 @@ export default function Header() {
           </span>
         </div>
 
-        {/* Desktop nav links */}
-        <nav className="hidden lg:flex items-center gap-0.5 flex-1">
-          {topNav.map((item) => {
-            const isActive =
-              pathname === item.href ||
-              (item.href === '/quiz' && pathname.startsWith('/quiz/') && !pathname.startsWith('/quiz/level'));
-            return (
-              <Link key={item.href} href={item.href}>
-                <span
-                  className={cn(
-                    'px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 inline-block',
-                    isActive
-                      ? 'font-semibold'
-                      : ''
-                  )}
-                  style={isActive
-                    ? { color: '#B8860B', background: 'rgba(212,160,23,0.1)', borderBottom: '2px solid #D4A017' }
-                    : { color: 'var(--text-medium)' }
-                  }
-                  onMouseEnter={(e) => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = 'rgba(212,160,23,0.08)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-dark)'; } }}
-                  onMouseLeave={(e) => { if (!isActive) { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--text-medium)'; } }}
-                >
-                  {item.label}
-                </span>
-              </Link>
-            );
-          })}
-        </nav>
+        {/* Spacer */}
+        <div className="flex-1" />
 
-        <div className="flex items-center gap-1 ml-auto">
-          {/* Search */}
-          <AnimatePresence mode="wait">
-            {showSearch ? (
-              <motion.div
-                key="search-open"
-                initial={{ width: 0, opacity: 0 }}
-                animate={{ width: 200, opacity: 1 }}
-                exit={{ width: 0, opacity: 0 }}
-                className="relative"
-              >
-                <input
-                  autoFocus
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Tìm bài thi..."
-                  className="w-full h-9 pl-3 pr-8 text-sm rounded-xl focus:outline-none transition-all"
-                  style={{
-                    border: '1.5px solid #D4A017',
-                    background: 'rgba(253,246,227,0.9)',
-                    color: 'var(--text-dark)',
-                  }}
-                />
-                <button onClick={() => setShowSearch(false)} className="absolute right-2 top-1/2 -translate-y-1/2">
-                  <X size={14} style={{ color: 'var(--text-medium)' }} />
-                </button>
-              </motion.div>
-            ) : (
-              <motion.button
-                key="search-icon"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                onClick={() => setShowSearch(true)}
-                className="p-2 rounded-xl transition-colors"
-                style={{ color: 'var(--text-medium)' }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(212,160,23,0.1)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-              >
-                <Search size={18} />
-              </motion.button>
-            )}
-          </AnimatePresence>
-
+        {/* Right-side actions */}
+        <div className="flex items-center gap-1">
           {/* Theme toggle */}
           <button
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
@@ -145,19 +65,6 @@ export default function Header() {
           >
             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
           </button>
-
-          {/* Notification bell (logged-in only) */}
-          {isLoggedIn && (
-            <button
-              className="p-2 rounded-xl transition-colors relative"
-              style={{ color: 'var(--text-medium)' }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(212,160,23,0.1)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-            >
-              <Bell size={18} />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-400 border border-white" />
-            </button>
-          )}
 
           {/* Auth section */}
           {isLoggedIn ? (

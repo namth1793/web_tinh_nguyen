@@ -203,14 +203,6 @@ export default function HeroBanner() {
 
           {/* Floating symbols */}
           <motion.div
-            animate={{ y: [-4, 4, -4], rotate: [0, 10, 0] }}
-            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
-            className="absolute"
-            style={{ top: 10, right: -10, fontSize: 22, filter: 'drop-shadow(0 0 6px rgba(212,160,23,0.8))' }}
-          >
-            🪷
-          </motion.div>
-          <motion.div
             animate={{ y: [4, -4, 4], rotate: [0, -15, 0] }}
             transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
             className="absolute"
