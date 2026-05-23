@@ -1,0 +1,261 @@
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Philosopher:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@400;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════
+   BASE — CSS Variables
+═══════════════════════════════════════════════ */
+@layer base {
+  :root {
+    --bg:           #FDF6E3;   /* parchment */
+    --bg-card:      #FFFDF7;
+    --gold:         #B8860B;
+    --saffron:      #EA6C00;
+    --maroon:       #8B2635;
+    --jade:         #1A9362;
+    --text-dark:    #2A1505;
+    --text-medium:  #7A5330;
+    --text-light:   #B8936A;
+    --border:       #E8D5A8;
+    --border-gold:  #D4A017;
+  }
+
+  .dark {
+    --bg:          #160C02;
+    --bg-card:     #1F1106;
+    --text-dark:   #F5EDD0;
+    --text-medium: #C4996A;
+    --text-light:  #8A6840;
+    --border:      #3A2210;
+    --border-gold: #7A5507;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+    background-color: var(--bg);
+    color: var(--text-dark);
+    transition: background-color 0.35s, color 0.35s;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='none' stroke='%23D4A017' stroke-width='0.5' opacity='0.06'%3E%3Cellipse cx='40' cy='40' rx='14' ry='22' transform='rotate(0 40 40)'/%3E%3Cellipse cx='40' cy='40' rx='14' ry='22' transform='rotate(60 40 40)'/%3E%3Cellipse cx='40' cy='40' rx='14' ry='22' transform='rotate(120 40 40)'/%3E%3Ccircle cx='40' cy='40' r='4'/%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar       { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #D4A017; border-radius: 99px; }
+
+  /* ── Headings use Philosopher ── */
+  h1, h2, h3 { font-family: 'Philosopher', serif; }
+}
+
+/* ═══════════════════════════════════════════════
+   COMPONENTS
+═══════════════════════════════════════════════ */
+@layer components {
+
+  /* Card with parchment + gold border + inner glow */
+  .card {
+    @apply relative bg-[#FFFDF7] dark:bg-[#1F1106] rounded-2xl border transition-all duration-200;
+    border-color: var(--border);
+    box-shadow:
+      0 1px 0 rgba(212,160,23,0.15) inset,
+      0 2px 8px rgba(42,21,5,0.06),
+      0 8px 24px rgba(42,21,5,0.04);
+  }
+  .dark .card {
+    box-shadow:
+      0 1px 0 rgba(212,160,23,0.08) inset,
+      0 2px 8px rgba(0,0,0,0.2);
+  }
+  .card:hover {
+    border-color: #D4A017;
+    box-shadow:
+      0 1px 0 rgba(212,160,23,0.25) inset,
+      0 4px 16px rgba(184,134,11,0.15),
+      0 12px 32px rgba(42,21,5,0.08);
+  }
+
+  /* Buttons */
+  .btn-gold {
+    @apply inline-flex items-center justify-center gap-2 font-semibold rounded-xl px-5 py-2.5 transition-all duration-200 active:scale-95;
+    background: linear-gradient(135deg, #D4A017 0%, #B8860B 100%);
+    color: #fff;
+    box-shadow: 0 2px 12px rgba(184,134,11,0.35), 0 1px 0 rgba(255,255,255,0.2) inset;
+  }
+  .btn-gold:hover {
+    background: linear-gradient(135deg, #E8B020 0%, #C4960C 100%);
+    box-shadow: 0 4px 18px rgba(184,134,11,0.5), 0 1px 0 rgba(255,255,255,0.25) inset;
+  }
+
+  .btn-saffron {
+    @apply inline-flex items-center justify-center gap-2 font-semibold rounded-xl px-5 py-2.5 transition-all duration-200 active:scale-95;
+    background: linear-gradient(135deg, #FB923C 0%, #EA6C00 100%);
+    color: #fff;
+    box-shadow: 0 2px 12px rgba(234,108,0,0.35), 0 1px 0 rgba(255,255,255,0.2) inset;
+  }
+  .btn-saffron:hover {
+    background: linear-gradient(135deg, #FC9F50 0%, #F07600 100%);
+    box-shadow: 0 4px 18px rgba(234,108,0,0.5);
+  }
+
+  .btn-outline-gold {
+    @apply inline-flex items-center justify-center gap-2 font-semibold rounded-xl px-5 py-2.5 transition-all duration-200;
+    border: 2px solid #D4A017;
+    color: #B8860B;
+    background: transparent;
+  }
+  .btn-outline-gold:hover {
+    background: linear-gradient(135deg, #D4A017 0%, #B8860B 100%);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(184,134,11,0.3);
+  }
+
+  /* Nav links */
+  .nav-link {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 cursor-pointer;
+  }
+  .nav-link-active {
+    background: linear-gradient(135deg, #D4A017 0%, #B8860B 100%);
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(184,134,11,0.35);
+  }
+  .nav-link-inactive {
+    color: var(--text-medium);
+  }
+  .nav-link-inactive:hover {
+    background: rgba(212,160,23,0.1);
+    color: var(--text-dark);
+  }
+
+  /* Badge */
+  .badge-level {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold;
+  }
+
+  /* Section heading */
+  .section-title {
+    font-family: 'Philosopher', serif;
+    @apply text-lg font-bold;
+    color: var(--text-dark);
+  }
+
+  /* Progress bar */
+  .progress-bar {
+    @apply h-2 rounded-full overflow-hidden;
+    background: rgba(212,160,23,0.15);
+  }
+  .progress-fill {
+    @apply h-full rounded-full transition-all duration-700;
+    background: linear-gradient(90deg, #D4A017 0%, #EA6C00 100%);
+  }
+
+  /* Ornamental divider */
+  .lotus-divider {
+    @apply flex items-center gap-3 my-2;
+  }
+  .lotus-divider::before,
+  .lotus-divider::after {
+    content: '';
+    @apply flex-1 h-px;
+    background: linear-gradient(90deg, transparent, #D4A017, transparent);
+  }
+
+  /* Buddhist border decoration (top line) */
+  .temple-border-top {
+    border-top: 2px solid transparent;
+    border-image: linear-gradient(90deg, transparent 0%, #D4A017 30%, #EA6C00 50%, #D4A017 70%, transparent 100%) 1;
+  }
+
+  /* Section header with ornament */
+  .section-header {
+    @apply flex items-center justify-between mb-5;
+  }
+  .section-header h2 {
+    @apply flex items-center gap-2 text-lg font-bold;
+    font-family: 'Philosopher', serif;
+    color: var(--text-dark);
+  }
+  .section-header h2::before {
+    content: '❧';
+    color: #D4A017;
+    font-size: 14px;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   UTILITIES
+═══════════════════════════════════════════════ */
+@layer utilities {
+
+  .text-gradient-gold {
+    background: linear-gradient(135deg, #D4A017 0%, #EA6C00 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-maroon {
+    background: linear-gradient(135deg, #8B2635 0%, #D4A017 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .bg-saffron-gradient {
+    background: linear-gradient(135deg, #FDF6E3 0%, #FDEDCC 40%, #F8D08A 100%);
+  }
+
+  .lotus-glow {
+    filter: drop-shadow(0 0 10px rgba(212,160,23,0.6))
+            drop-shadow(0 0 3px rgba(234,108,0,0.3));
+  }
+
+  .mandala-bg {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='%23D4A017' stroke-width='0.8' opacity='0.1'%3E%3Ccircle cx='100' cy='100' r='80'/%3E%3Ccircle cx='100' cy='100' r='55'/%3E%3Ccircle cx='100' cy='100' r='30'/%3E%3Ccircle cx='100' cy='100' r='10'/%3E%3Cline x1='100' y1='20' x2='100' y2='180'/%3E%3Cline x1='20' y1='100' x2='180' y2='100'/%3E%3Cline x1='43' y1='43' x2='157' y2='157'/%3E%3Cline x1='157' y1='43' x2='43' y2='157'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 200px 200px;
+    background-repeat: repeat;
+  }
+
+  .glass-card {
+    background: rgba(253,246,227,0.75);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(212,160,23,0.25);
+  }
+  .dark .glass-card {
+    background: rgba(31,17,6,0.85);
+    border-color: rgba(184,134,11,0.2);
+  }
+
+  /* Gold shimmer animation */
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      rgba(212,160,23,0) 0%,
+      rgba(212,160,23,0.15) 50%,
+      rgba(212,160,23,0) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   KEYFRAMES
+═══════════════════════════════════════════════ */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+.page-enter { animation: fadeIn 0.35s ease-out; }
