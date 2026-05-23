@@ -31,7 +31,7 @@ export default function LoginPage() {
     try {
       const res = await authApi.login(email, password);
       login(res.data.token, res.data.user);
-      router.push('/dashboard');
+      router.push(res.data.user.role === 'admin' ? '/admin' : '/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.error || 'Đăng nhập thất bại. Vui lòng thử lại.');
     } finally {
