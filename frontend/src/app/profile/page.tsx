@@ -7,7 +7,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import ProgressRing from '@/components/shared/ProgressRing';
 import RecentExamsTable from '@/components/dashboard/RecentExamsTable';
 import { useApp } from '@/context/ThemeContext';
-import { mockStats, mockBadges } from '@/data/mockData';
+import { mockBadges } from '@/data/mockData';
 import { LEVEL_NAMES } from '@/constants';
 import { cn } from '@/lib/utils';
 
@@ -17,10 +17,10 @@ const tabs = [
 ];
 
 export default function ProfilePage() {
-  const { user } = useApp();
+  const { user, stats } = useApp();
   const [activeTab, setActiveTab] = useState('overview');
-  const stats = mockStats;
-  const badges = mockBadges;
+  // Dùng badges từ user object (API) nếu có, fallback về mockBadges cho demo
+  const badges = user?.badges?.length ? user.badges : mockBadges;
 
   if (!user) return (
     <MainLayout>
@@ -35,7 +35,9 @@ export default function ProfilePage() {
   const levelInfo = LEVEL_NAMES[user.level_id] || { name: 'Trung cấp 2', maxXp: 1000 };
   const prevMaxXp = LEVEL_NAMES[user.level_id - 1]?.maxXp || 0;
   const xpProgress = Math.min(100, Math.round(((user.xp - prevMaxXp) / (levelInfo.maxXp - prevMaxXp)) * 100));
-  const studyProgress = Math.round((stats.total_correct / stats.total_questions) * 100);
+  const studyProgress = stats.total_questions > 0
+    ? Math.round((stats.total_correct / stats.total_questions) * 100)
+    : 0;
 
   return (
     <MainLayout showRightSidebar={false}>

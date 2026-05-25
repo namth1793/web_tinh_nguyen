@@ -61,23 +61,10 @@ export default function HeroBanner() {
             }}
           >
             <span>☸</span>
-            Nền tảng học Phật giáo — Chính pháp · Thanh tịnh · An lạc
+            Nền Tảng Thi Giáo Lý Phật Giáo
           </motion.div>
 
           {/* Heading */}
-          <motion.h1
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 }}
-            className="font-bold leading-tight mb-1"
-            style={{
-              fontFamily: "'Philosopher', serif",
-              fontSize: 'clamp(1.6rem, 3.5vw, 2.6rem)',
-              color: '#FDF6E3',
-            }}
-          >
-            Kiến thức Phật giáo
-          </motion.h1>
           <motion.h2
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -102,7 +89,7 @@ export default function HeroBanner() {
             className="text-sm mb-6 leading-relaxed max-w-sm"
             style={{ color: 'rgba(253,246,227,0.75)' }}
           >
-            Thi trắc nghiệm &amp; tự luận · Kiểm tra trí tuệ · Nuôi dưỡng từ bi
+            Học Pháp - Ôn Luyện - Khảo Thí
           </motion.p>
 
           {/* CTA */}

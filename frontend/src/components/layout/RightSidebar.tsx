@@ -4,14 +4,13 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ChevronRight, Flame, Star, Clock, BookOpen, Trophy } from 'lucide-react';
 import { useApp } from '@/context/ThemeContext';
-import { mockStats, mockBadges, mockLeaderboard } from '@/data/mockData';
+import { mockBadges, mockLeaderboard } from '@/data/mockData';
 import { LEVEL_NAMES } from '@/constants';
 import ProgressRing from '@/components/shared/ProgressRing';
 import { cn } from '@/lib/utils';
 
 export default function RightSidebar() {
-  const { user } = useApp();
-  const stats = mockStats;
+  const { user, stats } = useApp();
   const badges = mockBadges.slice(0, 4);
   const leaderboard = mockLeaderboard.slice(0, 3);
 
@@ -20,7 +19,9 @@ export default function RightSidebar() {
   const levelInfo = LEVEL_NAMES[user.level_id] || { name: 'Trung cấp 2', maxXp: 1000 };
   const prevMaxXp = LEVEL_NAMES[user.level_id - 1]?.maxXp || 0;
   const xpProgress = Math.min(100, Math.round(((user.xp - prevMaxXp) / (levelInfo.maxXp - prevMaxXp)) * 100));
-  const studyProgress = Math.round((stats.total_correct / stats.total_questions) * 100);
+  const studyProgress = stats.total_questions > 0
+    ? Math.round((stats.total_correct / stats.total_questions) * 100)
+    : 0;
 
   return (
     <aside className="hidden xl:flex flex-col w-72 min-h-screen bg-transparent pt-0 pr-4 gap-4 sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto pb-4">

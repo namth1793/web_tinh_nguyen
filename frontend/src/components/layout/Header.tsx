@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sun, Moon, Menu, LogOut, User, Settings, ChevronDown } from 'lucide-react';
@@ -12,6 +12,8 @@ export default function Header() {
   const { theme, setTheme } = useTheme();
   const { user, logout, setSidebarOpen, isLoggedIn } = useApp();
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   return (
     <header
@@ -59,11 +61,11 @@ export default function Header() {
           <button
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
             className="p-2 rounded-xl transition-colors"
-            style={{ color: theme === 'dark' ? '#D4A017' : 'var(--text-medium)' }}
+            style={{ color: mounted && theme === 'dark' ? '#D4A017' : 'var(--text-medium)' }}
             onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(212,160,23,0.1)'; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
           >
-            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            {mounted ? (theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />) : <Moon size={18} />}
           </button>
 
           {/* Auth section */}

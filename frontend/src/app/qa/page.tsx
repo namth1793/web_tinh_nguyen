@@ -7,25 +7,25 @@ import MainLayout from '@/components/layout/MainLayout';
 import { cn } from '@/lib/utils';
 import { useApp } from '@/context/ThemeContext';
 
-const CATEGORIES = ['Tất cả', 'Tứ Diệu Đế', 'Thiền Định', 'Nhân Quả', 'Giới Luật', 'Kinh Điển', 'Khác'];
+const CATEGORIES = ['Tất cả', 'Chủ Đề', 'Kinh', 'Giới Luật', 'Thiền', 'Lịch Sử', 'Khác'];
 
 const mockQA = [
   {
-    id: 1, category: 'Tứ Diệu Đế',
+    id: 1, category: 'Chủ Đề',
     question: 'Tứ Diệu Đế khác gì với Bát Chánh Đạo?',
     author: 'Minh Tâm', avatar: '🧘', time: '2 giờ trước', likes: 24,
     answer: 'Tứ Diệu Đế là bốn sự thật cao quý (Khổ, Tập, Diệt, Đạo) — đây là bản đồ chỉ ra bản chất của khổ đau và con đường thoát khổ. Còn Bát Chánh Đạo chính là nội dung chi tiết của "Đạo Đế" (chân lý thứ 4), gồm 8 nhánh thực hành cụ thể: Chánh kiến, Chánh tư duy, Chánh ngữ, Chánh nghiệp, Chánh mạng, Chánh tinh tấn, Chánh niệm, Chánh định. Tóm lại, Tứ Diệu Đế là khung lý thuyết, còn Bát Chánh Đạo là con đường thực hành nằm trong Đạo Đế.',
     answerer: 'Pháp Hạnh', answererAvatar: '📿', replies: 3,
   },
   {
-    id: 2, category: 'Thiền Định',
+    id: 2, category: 'Thiền',
     question: 'Người mới bắt đầu nên học thiền theo phương pháp nào?',
     author: 'Tuệ Minh', avatar: '🌿', time: '5 giờ trước', likes: 18,
     answer: 'Người mới nên bắt đầu với Thiền Chỉ (Samatha) — cụ thể là kỹ thuật theo dõi hơi thở (Anapanasati). Ngồi yên, lưng thẳng, mắt nhắm nhẹ, đặt sự chú ý hoàn toàn vào hơi thở vào-ra tại đầu mũi. Khi tâm bị phân tán, nhẹ nhàng đưa sự chú ý trở về hơi thở — không phán xét, không bực bội. Bắt đầu 10-15 phút mỗi ngày, duy trì đều đặn quan trọng hơn thời gian dài. Sau khi ổn định, có thể chuyển sang Thiền Quán (Vipassana).',
     answerer: 'Admin', answererAvatar: '⚡', replies: 7,
   },
   {
-    id: 3, category: 'Nhân Quả',
+    id: 3, category: 'Chủ Đề',
     question: 'Nghiệp tốt trong kiếp này có ảnh hưởng đến kiếp sau không?',
     author: 'Diệu Hạnh', avatar: '🪷', time: '1 ngày trước', likes: 31,
     answer: 'Theo giáo lý Phật giáo, nghiệp (karma) là năng lực của hành động có ý chí (cetanā). Nghiệp được tạo trong kiếp này sẽ tiếp tục theo dòng tâm thức (vijñāna-santāna) sang các kiếp sau. Nghiệp thiện (hành động từ bi, trí tuệ, bố thí...) tạo ra quả lành: tái sinh vào hoàn cảnh thuận lợi, có trí tuệ, sức khỏe tốt. Nghiệp không phải "số phận cố định" mà là xu hướng — người có định lực có thể chuyển hóa nghiệp thông qua tu tập.',
@@ -39,7 +39,7 @@ const mockQA = [
     answerer: 'Pháp Hạnh', answererAvatar: '📿', replies: 2,
   },
   {
-    id: 5, category: 'Kinh Điển',
+    id: 5, category: 'Kinh',
     question: 'Nên bắt đầu đọc kinh nào cho người mới học Phật?',
     author: 'Từ Bi', avatar: '🏛️', time: '3 ngày trước', likes: 42,
     answer: 'Cho người mới, tôi gợi ý theo thứ tự: (1) Kinh Pháp Cú (Dhammapada) — 423 kệ ngắn gọn, súc tích, dễ hiểu; (2) Kinh Nhật Tụng (các bài kinh ngắn thường dùng); (3) Kinh Di Giáo — lời dạy cuối của Đức Phật; (4) Kinh Bốn Lãnh Vực Quán Niệm (Satipatthana Sutta). Tránh bắt đầu với kinh dài như A Hàm hay Đại Bát Niết Bàn vì rất khó nếu chưa có nền tảng.',

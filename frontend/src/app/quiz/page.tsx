@@ -1,28 +1,43 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { Search, Filter, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, X } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import QuizCard from '@/components/quiz/QuizCard';
-import { mockQuizzes, mockTopics } from '@/data/mockData';
+import { mockQuizzes, mockTopics, getChildIds } from '@/data/mockData';
 import { LEVELS } from '@/constants';
 import { cn } from '@/lib/utils';
 
 export default function QuizPage() {
   const [search, setSearch] = useState('');
   const [selectedLevel, setSelectedLevel] = useState<string>('');
-  const [selectedTopic, setSelectedTopic] = useState<number | null>(null);
+  const [selectedParent, setSelectedParent] = useState<number | null>(null);
+  const [selectedTopic, setSelectedTopic] = useState<number | null>(null);  // sub-topic id
+
+  // Sub-topics của parent đang chọn
+  const subTopics = useMemo(
+    () => mockTopics.find(t => t.id === selectedParent)?.children ?? [],
+    [selectedParent],
+  );
+  const parentColor = useMemo(
+    () => mockTopics.find(t => t.id === selectedParent)?.color ?? '#D4A017',
+    [selectedParent],
+  );
 
   const filtered = useMemo(() => {
     return mockQuizzes.filter((q) => {
       if (search && !q.title.toLowerCase().includes(search.toLowerCase())) return false;
       if (selectedLevel && q.level !== selectedLevel) return false;
-      if (selectedTopic && q.topic_id !== selectedTopic) return false;
+      if (selectedTopic) {
+        if (q.topic_id !== selectedTopic) return false;
+      } else if (selectedParent) {
+        const ids = getChildIds(selectedParent);
+        if (!ids.includes(q.topic_id)) return false;
+      }
       return true;
     });
-  }, [search, selectedLevel, selectedTopic]);
+  }, [search, selectedLevel, selectedTopic, selectedParent]);
 
   return (
     <MainLayout showRightSidebar={false}>
@@ -73,22 +88,65 @@ export default function QuizPage() {
             </div>
           </div>
 
-          {/* Topic filter */}
+          {/* Parent topic filter */}
           <div className="flex gap-2 mt-3 flex-wrap">
             {mockTopics.map((t) => (
               <button
                 key={t.id}
-                onClick={() => setSelectedTopic(selectedTopic === t.id ? null : t.id)}
+                onClick={() => {
+                  if (selectedParent === t.id) {
+                    setSelectedParent(null);
+                    setSelectedTopic(null);
+                  } else {
+                    setSelectedParent(t.id);
+                    setSelectedTopic(null);
+                  }
+                }}
                 className={cn(
-                  'flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border-2 transition-all',
-                  selectedTopic === t.id ? 'text-white border-transparent' : 'border-cream-200 dark:border-[#3A2A10] text-temple-medium hover:border-gold-300'
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border-2 transition-all',
+                  selectedParent === t.id ? 'text-white border-transparent' : 'border-cream-200 dark:border-[#3A2A10] text-temple-medium hover:border-gold-300'
                 )}
-                style={selectedTopic === t.id ? { backgroundColor: t.color, borderColor: t.color } : {}}
+                style={selectedParent === t.id ? { backgroundColor: t.color, borderColor: t.color } : {}}
               >
                 {t.icon} {t.name}
+                {t.children && <span className="ml-1 opacity-70">({t.children.length})</span>}
               </button>
             ))}
           </div>
+
+          {/* Sub-topic filter — hiện khi có parent được chọn */}
+          <AnimatePresence>
+            {selectedParent && subTopics.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <div className="flex gap-1.5 mt-2 flex-wrap pl-1">
+                  <span className="text-[10px] text-temple-medium self-center mr-1">↳</span>
+                  {subTopics.map((st) => (
+                    <button
+                      key={st.id}
+                      onClick={() => setSelectedTopic(selectedTopic === st.id ? null : st.id)}
+                      className={cn(
+                        'flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium border transition-all',
+                        selectedTopic === st.id ? 'text-white border-transparent' : 'border-cream-200 dark:border-[#3A2A10] text-temple-medium hover:border-opacity-50'
+                      )}
+                      style={selectedTopic === st.id
+                        ? { backgroundColor: parentColor, borderColor: parentColor }
+                        : { borderColor: `${parentColor}40` }
+                      }
+                    >
+                      <span>{st.icon}</span>
+                      {st.name.split('(')[0].trim()}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Results count */}
@@ -96,9 +154,9 @@ export default function QuizPage() {
           <p className="text-sm text-temple-medium">
             Tìm thấy <span className="font-semibold text-temple-dark dark:text-cream-100">{filtered.length}</span> bài thi
           </p>
-          {(search || selectedLevel || selectedTopic) && (
+          {(search || selectedLevel || selectedParent || selectedTopic) && (
             <button
-              onClick={() => { setSearch(''); setSelectedLevel(''); setSelectedTopic(null); }}
+              onClick={() => { setSearch(''); setSelectedLevel(''); setSelectedParent(null); setSelectedTopic(null); }}
               className="text-xs text-gold-500 hover:text-gold-600 font-medium flex items-center gap-1"
             >
               <X size={12} /> Xóa bộ lọc

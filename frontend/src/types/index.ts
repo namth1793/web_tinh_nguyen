@@ -23,6 +23,16 @@ export interface Badge {
   earned_at?: string;
 }
 
+export interface SubTopic {
+  id: number;
+  name: string;
+  slug: string;
+  icon: string;
+  color: string;
+  question_count: number;
+  parent_id: number;
+}
+
 export interface Topic {
   id: number;
   name: string;
@@ -31,6 +41,7 @@ export interface Topic {
   icon: string;
   color: string;
   question_count: number;
+  children?: SubTopic[];
 }
 
 export interface Level {
