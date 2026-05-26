@@ -6,8 +6,9 @@ import { MessageCircle, Search, ThumbsUp, ChevronDown, ChevronUp, Plus, Send, X 
 import MainLayout from '@/components/layout/MainLayout';
 import { cn } from '@/lib/utils';
 import { useApp } from '@/context/ThemeContext';
+import { useLang } from '@/context/LangContext';
 
-const CATEGORIES = ['Tất cả', 'Chủ Đề', 'Kinh', 'Giới Luật', 'Thiền', 'Lịch Sử', 'Khác'];
+const CATEGORIES = ['all', 'Chủ Đề', 'Kinh', 'Giới Luật', 'Thiền', 'Lịch Sử', 'Khác'];
 
 const mockQA = [
   {
@@ -49,7 +50,8 @@ const mockQA = [
 
 export default function QAPage() {
   const { user } = useApp();
-  const [activeCategory, setActiveCategory] = useState('Tất cả');
+  const { t } = useLang();
+  const [activeCategory, setActiveCategory] = useState('all');
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<number | null>(1);
   const [showAskForm, setShowAskForm] = useState(false);
@@ -57,7 +59,7 @@ export default function QAPage() {
   const [likedIds, setLikedIds] = useState<number[]>([]);
 
   const filtered = mockQA.filter((q) => {
-    if (activeCategory !== 'Tất cả' && q.category !== activeCategory) return false;
+    if (activeCategory !== 'all' && q.category !== activeCategory) return false;
     if (search && !q.question.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
@@ -74,16 +76,16 @@ export default function QAPage() {
           <div>
             <h1 className="text-2xl font-black text-temple-dark dark:text-cream-100 flex items-center gap-2">
               <MessageCircle className="text-gold-500" size={26} />
-              Hỏi đáp Phật pháp
+              {t.qa.title}
             </h1>
-            <p className="text-sm text-temple-medium mt-1">Cộng đồng cùng học hỏi và chia sẻ Phật pháp</p>
+            <p className="text-sm text-temple-medium mt-1">{t.qa.subtitle}</p>
           </div>
           {user && (
             <button
               onClick={() => setShowAskForm(!showAskForm)}
               className="flex items-center gap-2 btn-gold text-sm py-2 px-4"
             >
-              <Plus size={16} /> Đặt câu hỏi
+              <Plus size={16} /> {t.qa.askQuestion}
             </button>
           )}
         </div>
@@ -99,13 +101,13 @@ export default function QAPage() {
             >
               <div className="card p-5 mb-5">
                 <div className="flex justify-between items-center mb-3">
-                  <h3 className="font-bold text-temple-dark dark:text-cream-100">Câu hỏi của bạn</h3>
+                  <h3 className="font-bold text-temple-dark dark:text-cream-100">{t.qa.yourQuestion}</h3>
                   <button onClick={() => setShowAskForm(false)}><X size={18} className="text-temple-medium" /></button>
                 </div>
                 <textarea
                   value={newQuestion}
                   onChange={(e) => setNewQuestion(e.target.value)}
-                  placeholder="Nhập câu hỏi về Phật pháp của bạn tại đây... Hãy đặt câu hỏi cụ thể và rõ ràng để nhận được câu trả lời chính xác nhất."
+                  placeholder={t.qa.questionPlaceholder}
                   rows={4}
                   className="w-full p-3 rounded-xl border-2 border-cream-200 dark:border-[#3A2A10] bg-cream-50 dark:bg-[#1A1208] text-sm text-temple-dark dark:text-cream-100 placeholder-temple-medium/60 focus:outline-none focus:border-gold-400 resize-none"
                 />
@@ -126,7 +128,7 @@ export default function QAPage() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Tìm kiếm câu hỏi..."
+            placeholder={t.qa.searchPlaceholder}
             className="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-cream-200 dark:border-[#3A2A10] bg-white dark:bg-[#251C0E] text-sm text-temple-dark dark:text-cream-100 focus:outline-none focus:border-gold-400 transition-all"
           />
         </div>
@@ -144,17 +146,17 @@ export default function QAPage() {
                   : 'bg-cream-100 dark:bg-[#3A2A10] text-temple-medium hover:text-temple-dark dark:hover:text-cream-100'
               )}
             >
-              {cat}
+              {cat === 'all' ? t.common.all : cat}
             </button>
           ))}
         </div>
 
         {/* Stats */}
         <div className="flex items-center gap-4 mb-5">
-          <span className="text-sm text-temple-medium">{filtered.length} câu hỏi</span>
+          <span className="text-sm text-temple-medium">{filtered.length} {t.qa.questions}</span>
           <div className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2.5 py-1 rounded-full">
             <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-            Cộng đồng đang hoạt động
+            {t.qa.active}
           </div>
         </div>
 
@@ -201,10 +203,10 @@ export default function QAPage() {
                       className={cn('flex items-center gap-1.5 text-xs font-medium transition-colors', isLiked ? 'text-gold-500' : 'text-temple-medium hover:text-gold-500')}
                     >
                       <ThumbsUp size={13} fill={isLiked ? 'currentColor' : 'none'} />
-                      {item.likes + (isLiked ? 1 : 0)} lượt thích
+                      {item.likes + (isLiked ? 1 : 0)} {t.qa.likes}
                     </button>
                     <span className="flex items-center gap-1.5 text-xs text-temple-medium">
-                      <MessageCircle size={13} /> {item.replies} trả lời
+                      <MessageCircle size={13} /> {item.replies} {t.qa.replies}
                     </span>
                   </div>
                 </button>
@@ -224,7 +226,7 @@ export default function QAPage() {
                         <div className="flex items-center gap-2 mb-3">
                           <span className="text-xl">{item.answererAvatar}</span>
                           <span className="text-sm font-bold text-gold-600 dark:text-gold-400">{item.answerer}</span>
-                          <span className="text-xs bg-gold-100 dark:bg-gold-900/30 text-gold-600 px-2 py-0.5 rounded-full">Giải đáp</span>
+                          <span className="text-xs bg-gold-100 dark:bg-gold-900/30 text-gold-600 px-2 py-0.5 rounded-full">{t.qa.answer}</span>
                         </div>
                         <div className="bg-cream-50 dark:bg-[#3A2A10] rounded-xl p-4">
                           <p className="text-sm text-temple-dark dark:text-cream-100 leading-relaxed">{item.answer}</p>
@@ -238,7 +240,7 @@ export default function QAPage() {
                             </div>
                             <div className="flex-1 flex gap-2">
                               <input
-                                placeholder="Thêm bình luận..."
+                                placeholder={t.qa.addComment}
                                 className="flex-1 px-3 py-2 rounded-xl border border-cream-200 dark:border-[#3A2A10] bg-white dark:bg-[#251C0E] text-xs text-temple-dark dark:text-cream-100 focus:outline-none focus:border-gold-400"
                               />
                               <button className="px-3 py-2 bg-gold-500 hover:bg-gold-600 text-white rounded-xl transition-colors">
@@ -260,8 +262,8 @@ export default function QAPage() {
         {filtered.length === 0 && (
           <div className="text-center py-16">
             <div className="text-5xl mb-3">🔍</div>
-            <h3 className="font-semibold text-temple-dark dark:text-cream-100 mb-1">Không tìm thấy câu hỏi</h3>
-            <p className="text-sm text-temple-medium">Hãy là người đầu tiên đặt câu hỏi này!</p>
+            <h3 className="font-semibold text-temple-dark dark:text-cream-100 mb-1">{t.qa.noResults}</h3>
+            <p className="text-sm text-temple-medium">{t.qa.noResultsHint}</p>
           </div>
         )}
       </div>

@@ -5,16 +5,19 @@ import { motion } from 'framer-motion';
 import { ChevronRight, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { mockRecentResults } from '@/data/mockData';
 import { LEVEL_COLORS } from '@/constants';
-import { cn, formatTime } from '@/lib/utils';
+import { cn } from '@/lib/utils';
+import { useLang } from '@/context/LangContext';
 
 export default function RecentExamsTable() {
+  const { t } = useLang();
+
   return (
     <section className="mb-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="section-title text-lg">Bài thi gần đây</h2>
+        <h2 className="section-title text-lg">{t.recent.title}</h2>
         <Link href="/profile">
           <span className="text-sm text-gold-500 hover:text-gold-600 font-medium flex items-center gap-1">
-            Xem tất cả <ChevronRight size={14} />
+            {t.recent.viewAll} <ChevronRight size={14} />
           </span>
         </Link>
       </div>
@@ -28,12 +31,12 @@ export default function RecentExamsTable() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-cream-200 dark:border-[#3A2A10]">
-                <th className="text-left px-4 py-3 text-xs font-semibold text-temple-medium">Tên bài thi</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-temple-medium hidden sm:table-cell">Chủ đề</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-temple-medium">Trình độ</th>
-                <th className="text-center px-4 py-3 text-xs font-semibold text-temple-medium">Điểm</th>
-                <th className="text-center px-4 py-3 text-xs font-semibold text-temple-medium hidden md:table-cell">Thời gian</th>
-                <th className="text-center px-4 py-3 text-xs font-semibold text-temple-medium">Kết quả</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-temple-medium">{t.recent.examName}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-temple-medium hidden sm:table-cell">{t.recent.topic}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-temple-medium">{t.recent.level}</th>
+                <th className="text-center px-4 py-3 text-xs font-semibold text-temple-medium">{t.recent.score}</th>
+                <th className="text-center px-4 py-3 text-xs font-semibold text-temple-medium hidden md:table-cell">{t.recent.time}</th>
+                <th className="text-center px-4 py-3 text-xs font-semibold text-temple-medium">{t.recent.result}</th>
               </tr>
             </thead>
             <tbody>
@@ -82,7 +85,7 @@ export default function RecentExamsTable() {
                     <td className="px-4 py-3 text-center hidden md:table-cell">
                       <div className="flex items-center justify-center gap-1 text-temple-medium">
                         <Clock size={12} />
-                        <span className="text-xs">{result.time_spent} phút</span>
+                        <span className="text-xs">{result.time_spent} {t.recent.duration}</span>
                       </div>
                     </td>
 
@@ -90,11 +93,11 @@ export default function RecentExamsTable() {
                     <td className="px-4 py-3 text-center">
                       {result.passed ? (
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-medium">
-                          <CheckCircle size={11} /> Đạt
+                          <CheckCircle size={11} /> {t.recent.passed}
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full text-xs font-medium">
-                          <XCircle size={11} /> Chưa đạt
+                          <XCircle size={11} /> {t.recent.failed}
                         </span>
                       )}
                     </td>

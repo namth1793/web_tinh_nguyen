@@ -7,18 +7,19 @@ import MainLayout from '@/components/layout/MainLayout';
 import ProgressRing from '@/components/shared/ProgressRing';
 import RecentExamsTable from '@/components/dashboard/RecentExamsTable';
 import { useApp } from '@/context/ThemeContext';
+import { useLang } from '@/context/LangContext';
 import { mockBadges } from '@/data/mockData';
 import { LEVEL_NAMES } from '@/constants';
 import { cn } from '@/lib/utils';
 
-const tabs = [
-  { key: 'overview', label: 'Tổng quan', icon: Trophy },
-  { key: 'results', label: 'Lịch sử thi', icon: FileText },
-];
-
 export default function ProfilePage() {
   const { user, stats } = useApp();
+  const { t } = useLang();
   const [activeTab, setActiveTab] = useState('overview');
+  const tabs = [
+    { key: 'overview', label: t.profile.tabs.overview, icon: Trophy },
+    { key: 'results', label: t.profile.tabs.history, icon: FileText },
+  ];
   // Dùng badges từ user object (API) nếu có, fallback về mockBadges cho demo
   const badges = user?.badges?.length ? user.badges : mockBadges;
 
@@ -26,8 +27,8 @@ export default function ProfilePage() {
     <MainLayout>
       <div className="text-center py-20">
         <div className="text-5xl mb-4">🔐</div>
-        <h2 className="text-xl font-bold text-temple-dark dark:text-cream-100 mb-2">Chưa đăng nhập</h2>
-        <p className="text-temple-medium">Vui lòng đăng nhập để xem hồ sơ</p>
+        <h2 className="text-xl font-bold text-temple-dark dark:text-cream-100 mb-2">{t.header.login}</h2>
+        <p className="text-temple-medium">{t.login.noAccount}</p>
       </div>
     </MainLayout>
   );
@@ -74,7 +75,7 @@ export default function ProfilePage() {
               {/* XP bar */}
               <div className="mt-3">
                 <div className="flex justify-between text-xs text-temple-medium mb-1">
-                  <span>Cấp độ {user.level_id}</span>
+                  <span>{t.profile.level} {user.level_id}</span>
                   <span>{user.xp} / {levelInfo.maxXp} XP</span>
                 </div>
                 <div className="progress-bar">
@@ -90,10 +91,10 @@ export default function ProfilePage() {
               {/* Quick stats */}
               <div className="flex flex-wrap gap-4 mt-3">
                 {[
-                  { icon: BookOpen, label: 'Bài thi', value: stats.total_quizzes, color: 'text-blue-500' },
-                  { icon: Star, label: 'Điểm TB', value: `${stats.avg_score}%`, color: 'text-gold-500' },
-                  { icon: Flame, label: 'Streak', value: `${user.study_days} ngày`, color: 'text-orange-500' },
-                  { icon: Trophy, label: 'Xếp hạng', value: `#${stats.rank}`, color: 'text-purple-500' },
+                  { icon: BookOpen, label: t.profile.totalQuizzes, value: stats.total_quizzes, color: 'text-blue-500' },
+                  { icon: Star, label: t.profile.avgScore, value: `${stats.avg_score}%`, color: 'text-gold-500' },
+                  { icon: Flame, label: t.profile.studyStreak, value: `${user.study_days} ${t.profile.days}`, color: 'text-orange-500' },
+                  { icon: Trophy, label: t.ranking.rank, value: `#${stats.rank}`, color: 'text-purple-500' },
                 ].map((s) => (
                   <div key={s.label} className="flex items-center gap-1.5">
                     <s.icon size={14} className={s.color} />
@@ -128,14 +129,14 @@ export default function ProfilePage() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Study progress */}
             <div className="card p-5">
-              <h3 className="section-title mb-4">Tiến độ học tập</h3>
+              <h3 className="section-title mb-4">{t.profile.studyProgress}</h3>
               <div className="flex items-center gap-4">
-                <ProgressRing percentage={studyProgress} size={100} strokeWidth={10} label="Hoàn thành" />
+                <ProgressRing percentage={studyProgress} size={100} strokeWidth={10} label={t.common.finish} />
                 <div className="flex-1 space-y-2">
                   {[
-                    { label: 'Bài đã làm', value: `${stats.total_quizzes}/32` },
-                    { label: 'Câu hỏi đúng', value: `${stats.total_correct}/${stats.total_questions}` },
-                    { label: 'Tỉ lệ đạt', value: `${Math.round((stats.passed_count / stats.total_quizzes) * 100)}%` },
+                    { label: t.sidebar.doneTasks, value: `${stats.total_quizzes}/32` },
+                    { label: t.profile.totalCorrect, value: `${stats.total_correct}/${stats.total_questions}` },
+                    { label: t.recent.passed, value: `${Math.round((stats.passed_count / stats.total_quizzes) * 100)}%` },
                   ].map((item) => (
                     <div key={item.label} className="flex justify-between">
                       <span className="text-xs text-temple-medium">{item.label}</span>
@@ -148,7 +149,7 @@ export default function ProfilePage() {
 
             {/* Badges preview */}
             <div className="card p-5">
-              <h3 className="section-title mb-4">Huy hiệu đã đạt ({badges.length})</h3>
+              <h3 className="section-title mb-4">{t.sidebar.myBadges} ({badges.length})</h3>
               <div className="grid grid-cols-3 gap-3">
                 {badges.slice(0, 6).map((badge) => (
                   <div key={badge.id} className="flex flex-col items-center gap-1 group" title={badge.name}>
@@ -178,15 +179,15 @@ export default function ProfilePage() {
             <a href="/achievements" className="flex-1 card p-3 flex items-center gap-3 cursor-pointer hover:shadow-gold transition-all">
               <Trophy size={20} className="text-gold-500" />
               <div>
-                <p className="text-sm font-semibold" style={{ color: 'var(--text-dark)' }}>Thành tích</p>
-                <p className="text-xs" style={{ color: 'var(--text-medium)' }}>Xem tất cả thành tích →</p>
+                <p className="text-sm font-semibold" style={{ color: 'var(--text-dark)' }}>{t.achievements.title.replace(/🏅 /, '')}</p>
+                <p className="text-xs" style={{ color: 'var(--text-medium)' }}>{t.recent.viewAll} →</p>
               </div>
             </a>
             <a href="/badges" className="flex-1 card p-3 flex items-center gap-3 cursor-pointer hover:shadow-gold transition-all">
               <Award size={20} className="text-saffron-500" />
               <div>
-                <p className="text-sm font-semibold" style={{ color: 'var(--text-dark)' }}>Huy hiệu</p>
-                <p className="text-xs" style={{ color: 'var(--text-medium)' }}>Xem tất cả huy hiệu →</p>
+                <p className="text-sm font-semibold" style={{ color: 'var(--text-dark)' }}>{t.nav.badges}</p>
+                <p className="text-xs" style={{ color: 'var(--text-medium)' }}>{t.recent.viewAll} →</p>
               </div>
             </a>
           </motion.div>

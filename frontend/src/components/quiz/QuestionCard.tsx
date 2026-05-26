@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { CheckCircle, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLang } from '@/context/LangContext';
 
 interface QuestionCardProps {
   question: {
@@ -27,6 +28,7 @@ const OPTIONS = ['A', 'B', 'C', 'D'];
 export default function QuestionCard({
   question, questionIndex, totalQuestions, selectedAnswer, showResult, onAnswer
 }: QuestionCardProps) {
+  const { t } = useLang();
   const opts = [question.option_a, question.option_b, question.option_c, question.option_d];
 
   const getOptionStyle = (idx: number) => {
@@ -50,7 +52,7 @@ export default function QuestionCard({
     >
       {/* Progress */}
       <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium text-temple-medium">Câu {questionIndex + 1}/{totalQuestions}</span>
+        <span className="text-sm font-medium text-temple-medium">{t.quizDetail.question} {questionIndex + 1}/{totalQuestions}</span>
         <div className="flex gap-1">
           {Array.from({ length: totalQuestions }).map((_, i) => (
             <div key={i} className={cn('h-1.5 rounded-full transition-all', i <= questionIndex ? 'bg-gold-400 w-5' : 'bg-cream-200 dark:bg-[#3A2A10] w-3')} />
@@ -98,7 +100,7 @@ export default function QuestionCard({
           animate={{ opacity: 1, height: 'auto' }}
           className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl"
         >
-          <p className="text-sm text-blue-800 dark:text-blue-200 font-medium mb-1">💡 Giải thích</p>
+          <p className="text-sm text-blue-800 dark:text-blue-200 font-medium mb-1">💡 {t.quizDetail.explanation}</p>
           <p className="text-sm text-blue-700 dark:text-blue-300 leading-relaxed">{question.explanation}</p>
         </motion.div>
       )}

@@ -2,25 +2,26 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, Crown, Flame } from 'lucide-react';
+import { Crown } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { mockLeaderboard } from '@/data/mockData';
 import { cn } from '@/lib/utils';
 import { LEVEL_NAMES } from '@/constants';
+import { useLang } from '@/context/LangContext';
 
 const extendedLeaderboard = [
   ...mockLeaderboard,
-  { id: 5, rank: 4, name: 'Diệu Hạnh', xp: 620, level_id: 2 },
-  { id: 6, rank: 5, name: 'Tâm Bình', xp: 340, level_id: 1 },
-  { id: 7, rank: 6, name: 'Hỷ Xả', xp: 580, level_id: 2 },
-  { id: 8, rank: 7, name: 'Giác Ngộ', xp: 480, level_id: 2 },
-  { id: 9, rank: 8, name: 'Bình An', xp: 320, level_id: 1 },
+  { id: 5, rank: 4, name: 'Diệu Hạnh', xp: 620, level_id: 2, isCurrentUser: false },
+  { id: 6, rank: 5, name: 'Tâm Bình', xp: 340, level_id: 1, isCurrentUser: false },
+  { id: 7, rank: 6, name: 'Hỷ Xả', xp: 580, level_id: 2, isCurrentUser: false },
+  { id: 8, rank: 7, name: 'Giác Ngộ', xp: 480, level_id: 2, isCurrentUser: false },
+  { id: 9, rank: 8, name: 'Bình An', xp: 320, level_id: 1, isCurrentUser: false },
 ];
 
-const tabs = ['Tuần này', 'Tháng này', 'Tổng'];
-
 export default function RankingPage() {
-  const [activeTab, setActiveTab] = useState('Tuần này');
+  const { t } = useLang();
+  const tabs = [t.ranking.thisWeek, t.ranking.thisMonth, t.ranking.allTime];
+  const [activeTab, setActiveTab] = useState(0);
   const top3 = extendedLeaderboard.slice(0, 3);
   const rest = extendedLeaderboard.slice(3);
 
@@ -30,19 +31,19 @@ export default function RankingPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="text-5xl mb-2">🏆</div>
-          <h1 className="text-2xl font-black text-temple-dark dark:text-cream-100">Bảng Xếp Hạng</h1>
-          <p className="text-temple-medium text-sm mt-1">Cùng nhau tinh tấn học Phật pháp mỗi ngày</p>
+          <h1 className="text-2xl font-black text-temple-dark dark:text-cream-100">{t.ranking.title}</h1>
+          <p className="text-temple-medium text-sm mt-1">{t.ranking.subtitle}</p>
         </div>
 
         {/* Tabs */}
         <div className="flex gap-1 bg-cream-100 dark:bg-[#3A2A10] rounded-2xl p-1 mb-6">
-          {tabs.map((tab) => (
+          {tabs.map((tab, i) => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => setActiveTab(i)}
               className={cn(
                 'flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all',
-                activeTab === tab ? 'bg-white dark:bg-[#251C0E] text-gold-600 shadow-card' : 'text-temple-medium hover:text-temple-dark'
+                activeTab === i ? 'bg-white dark:bg-[#251C0E] text-gold-600 shadow-card' : 'text-temple-medium hover:text-temple-dark'
               )}
             >
               {tab}
@@ -110,7 +111,7 @@ export default function RankingPage() {
         {/* Rest of leaderboard */}
         <div className="card overflow-hidden">
           {rest.map((entry, i) => {
-            const levelName = LEVEL_NAMES[entry.level_id]?.name || 'Học viên';
+            const levelName = LEVEL_NAMES[entry.level_id]?.name || t.ranking.student;
             return (
               <motion.div
                 key={entry.id}
@@ -128,7 +129,7 @@ export default function RankingPage() {
                 </div>
                 <div className="flex-1">
                   <p className={cn('font-semibold text-sm', entry.isCurrentUser ? 'text-gold-600' : 'text-temple-dark dark:text-cream-100')}>
-                    {entry.name} {entry.isCurrentUser && <span className="text-xs font-normal">(Bạn)</span>}
+                    {entry.name} {entry.isCurrentUser && <span className="text-xs font-normal">{t.ranking.you}</span>}
                   </p>
                   <p className="text-xs text-temple-medium">{levelName}</p>
                 </div>

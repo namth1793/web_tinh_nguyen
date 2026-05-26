@@ -4,11 +4,12 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import MainLayout from '@/components/layout/MainLayout';
 import { mockBadges } from '@/data/mockData';
-
-const categories = ['Tất cả', 'Học tập', 'Thời gian', 'Xã hội', 'Đặc biệt'];
+import { useLang } from '@/context/LangContext';
 
 export default function BadgesPage() {
-  const [activeCategory, setActiveCategory] = useState('Tất cả');
+  const { t } = useLang();
+  const categories = [t.common.all, 'Học tập', 'Thời gian', 'Xã hội', 'Đặc biệt'];
+  const [activeCategory, setActiveCategory] = useState(categories[0]);
   const badges = mockBadges;
   const earnedCount = badges.length;
 
@@ -28,10 +29,10 @@ export default function BadgesPage() {
             className="font-bold mb-2"
             style={{ fontFamily: "'Philosopher', serif", fontSize: 'clamp(1.4rem, 3vw, 2rem)', color: 'var(--text-dark)' }}
           >
-            Huy hiệu của tôi
+            {t.badges.title}
           </h1>
           <p className="text-sm" style={{ color: 'var(--text-medium)' }}>
-            Những phần thưởng ghi nhận hành trình tu học và cống hiến của bạn.
+            {t.badges.subtitle}
           </p>
         </div>
 

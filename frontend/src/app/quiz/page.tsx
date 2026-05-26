@@ -8,20 +8,22 @@ import QuizCard from '@/components/quiz/QuizCard';
 import { mockQuizzes, mockTopics, getChildIds } from '@/data/mockData';
 import { LEVELS } from '@/constants';
 import { cn } from '@/lib/utils';
+import { useLang } from '@/context/LangContext';
 
 export default function QuizPage() {
+  const { t } = useLang();
   const [search, setSearch] = useState('');
   const [selectedLevel, setSelectedLevel] = useState<string>('');
   const [selectedParent, setSelectedParent] = useState<number | null>(null);
-  const [selectedTopic, setSelectedTopic] = useState<number | null>(null);  // sub-topic id
+  const [selectedTopic, setSelectedTopic] = useState<number | null>(null);
 
   // Sub-topics của parent đang chọn
   const subTopics = useMemo(
-    () => mockTopics.find(t => t.id === selectedParent)?.children ?? [],
+    () => mockTopics.find(tp => tp.id === selectedParent)?.children ?? [],
     [selectedParent],
   );
   const parentColor = useMemo(
-    () => mockTopics.find(t => t.id === selectedParent)?.color ?? '#D4A017',
+    () => mockTopics.find(tp => tp.id === selectedParent)?.color ?? '#D4A017',
     [selectedParent],
   );
 
@@ -44,8 +46,8 @@ export default function QuizPage() {
       <div className="page-enter max-w-5xl">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-black text-temple-dark dark:text-cream-100 mb-1">📚 Ngân hàng đề thi</h1>
-          <p className="text-temple-medium text-sm">Chọn bài thi phù hợp với trình độ và chủ đề của bạn</p>
+          <h1 className="text-2xl font-black text-temple-dark dark:text-cream-100 mb-1">{t.quiz.title}</h1>
+          <p className="text-temple-medium text-sm">{t.quiz.subtitle}</p>
         </div>
 
         {/* Filters */}
@@ -57,7 +59,7 @@ export default function QuizPage() {
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Tìm kiếm bài thi..."
+                placeholder={t.quiz.searchPlaceholder}
                 className="w-full pl-9 pr-4 py-2 text-sm rounded-xl border border-cream-200 dark:border-[#3A2A10] bg-cream-50 dark:bg-[#1A1208] focus:outline-none focus:border-gold-400 text-temple-dark dark:text-cream-100"
               />
               {search && (
@@ -73,7 +75,7 @@ export default function QuizPage() {
                 onClick={() => setSelectedLevel('')}
                 className={cn('px-3 py-1.5 rounded-xl text-xs font-medium transition-all', !selectedLevel ? 'bg-gold-500 text-white' : 'bg-cream-100 dark:bg-[#3A2A10] text-temple-medium hover:text-temple-dark')}
               >
-                Tất cả
+                {t.quiz.allLevels}
               </button>
               {LEVELS.map((l) => (
                 <button
@@ -90,31 +92,31 @@ export default function QuizPage() {
 
           {/* Parent topic filter */}
           <div className="flex gap-2 mt-3 flex-wrap">
-            {mockTopics.map((t) => (
+            {mockTopics.map((tp) => (
               <button
-                key={t.id}
+                key={tp.id}
                 onClick={() => {
-                  if (selectedParent === t.id) {
+                  if (selectedParent === tp.id) {
                     setSelectedParent(null);
                     setSelectedTopic(null);
                   } else {
-                    setSelectedParent(t.id);
+                    setSelectedParent(tp.id);
                     setSelectedTopic(null);
                   }
                 }}
                 className={cn(
                   'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border-2 transition-all',
-                  selectedParent === t.id ? 'text-white border-transparent' : 'border-cream-200 dark:border-[#3A2A10] text-temple-medium hover:border-gold-300'
+                  selectedParent === tp.id ? 'text-white border-transparent' : 'border-cream-200 dark:border-[#3A2A10] text-temple-medium hover:border-gold-300'
                 )}
-                style={selectedParent === t.id ? { backgroundColor: t.color, borderColor: t.color } : {}}
+                style={selectedParent === tp.id ? { backgroundColor: tp.color, borderColor: tp.color } : {}}
               >
-                {t.icon} {t.name}
-                {t.children && <span className="ml-1 opacity-70">({t.children.length})</span>}
+                {tp.icon} {tp.name}
+                {tp.children && <span className="ml-1 opacity-70">({tp.children.length})</span>}
               </button>
             ))}
           </div>
 
-          {/* Sub-topic filter — hiện khi có parent được chọn */}
+          {/* Sub-topic filter */}
           <AnimatePresence>
             {selectedParent && subTopics.length > 0 && (
               <motion.div
@@ -152,14 +154,14 @@ export default function QuizPage() {
         {/* Results count */}
         <div className="flex items-center justify-between mb-4">
           <p className="text-sm text-temple-medium">
-            Tìm thấy <span className="font-semibold text-temple-dark dark:text-cream-100">{filtered.length}</span> bài thi
+            {t.quiz.found} <span className="font-semibold text-temple-dark dark:text-cream-100">{filtered.length}</span> {t.quiz.exams}
           </p>
           {(search || selectedLevel || selectedParent || selectedTopic) && (
             <button
               onClick={() => { setSearch(''); setSelectedLevel(''); setSelectedParent(null); setSelectedTopic(null); }}
               className="text-xs text-gold-500 hover:text-gold-600 font-medium flex items-center gap-1"
             >
-              <X size={12} /> Xóa bộ lọc
+              <X size={12} /> {t.quiz.clearFilter}
             </button>
           )}
         </div>
@@ -174,8 +176,8 @@ export default function QuizPage() {
         ) : (
           <div className="text-center py-16">
             <div className="text-6xl mb-4">🔍</div>
-            <h3 className="text-lg font-semibold text-temple-dark dark:text-cream-100 mb-2">Không tìm thấy bài thi</h3>
-            <p className="text-sm text-temple-medium">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
+            <h3 className="text-lg font-semibold text-temple-dark dark:text-cream-100 mb-2">{t.quiz.noResults}</h3>
+            <p className="text-sm text-temple-medium">{t.quiz.noResultsHint}</p>
           </div>
         )}
       </div>

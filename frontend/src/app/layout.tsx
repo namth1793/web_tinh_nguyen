@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { ThemeProvider } from 'next-themes';
 import { AppProvider } from '@/context/ThemeContext';
+import { LangProvider } from '@/context/LangContext';
 
 export const metadata: Metadata = {
   title: 'Phật Pháp Test - Học Phật · Hiểu Pháp · Ứng Dụng · An Lạc',
@@ -18,9 +19,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-          <AppProvider>
-            {children}
-          </AppProvider>
+          <LangProvider>
+            <AppProvider>
+              {children}
+            </AppProvider>
+          </LangProvider>
         </ThemeProvider>
       </body>
     </html>

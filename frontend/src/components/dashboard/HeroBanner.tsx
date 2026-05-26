@@ -3,8 +3,10 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { PenLine, BarChart2 } from 'lucide-react';
+import { useLang } from '@/context/LangContext';
 
 export default function HeroBanner() {
+  const { t } = useLang();
   return (
     <motion.div
       initial={{ opacity: 0, y: -12 }}
@@ -12,30 +14,21 @@ export default function HeroBanner() {
       className="relative overflow-hidden rounded-3xl mb-6"
       style={{ minHeight: 240 }}
     >
-      {/* ── Background layers ── */}
       <div className="absolute inset-0"
         style={{ background: 'linear-gradient(135deg, #3D1C02 0%, #6B2F08 35%, #9A4D0F 65%, #B8860B 100%)' }}
       />
-
-      {/* Mandala SVG overlay (right side) */}
       <div className="absolute right-0 top-0 bottom-0 w-1/2 opacity-10 pointer-events-none"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Cg fill='none' stroke='%23D4A017' stroke-width='1.2'%3E%3Ccircle cx='200' cy='200' r='180'/%3E%3Ccircle cx='200' cy='200' r='140'/%3E%3Ccircle cx='200' cy='200' r='100'/%3E%3Ccircle cx='200' cy='200' r='60'/%3E%3Ccircle cx='200' cy='200' r='25'/%3E%3Cline x1='200' y1='20' x2='200' y2='380'/%3E%3Cline x1='20' y1='200' x2='380' y2='200'/%3E%3Cline x1='73' y1='73' x2='327' y2='327'/%3E%3Cline x1='327' y1='73' x2='73' y2='327'/%3E%3Cellipse cx='200' cy='200' rx='70' ry='140' transform='rotate(22.5 200 200)'/%3E%3Cellipse cx='200' cy='200' rx='70' ry='140' transform='rotate(67.5 200 200)'/%3E%3Cellipse cx='200' cy='200' rx='70' ry='140' transform='rotate(112.5 200 200)'/%3E%3Cellipse cx='200' cy='200' rx='70' ry='140' transform='rotate(157.5 200 200)'/%3E%3C/g%3E%3C/svg%3E")`,
-          backgroundSize: 'contain',
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center right',
+          backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center right',
         }}
       />
-
-      {/* Soft inner glow circles */}
       <div className="absolute top-0 left-1/3 w-80 h-80 rounded-full opacity-20 pointer-events-none"
         style={{ background: 'radial-gradient(circle, #D4A017 0%, transparent 70%)' }}
       />
       <div className="absolute bottom-0 right-1/4 w-56 h-56 rounded-full opacity-10 pointer-events-none"
         style={{ background: 'radial-gradient(circle, #EA6C00 0%, transparent 70%)' }}
       />
-
-      {/* ── Top ornamental border ── */}
       <div className="absolute top-0 left-0 right-0 h-px"
         style={{ background: 'linear-gradient(90deg, transparent 0%, #D4A017 30%, #F5C842 50%, #D4A017 70%, transparent 100%)' }}
       />
@@ -43,28 +36,19 @@ export default function HeroBanner() {
         style={{ background: 'linear-gradient(90deg, transparent 0%, #D4A017 30%, #F5C842 50%, #D4A017 70%, transparent 100%)' }}
       />
 
-      {/* ── Content ── */}
       <div className="relative z-10 flex items-center h-full p-7 lg:p-10 gap-6">
-        {/* Left: text */}
         <div className="flex-1 min-w-0">
-          {/* Tag line */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.05 }}
             className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold mb-4"
-            style={{
-              background: 'rgba(212,160,23,0.2)',
-              border: '1px solid rgba(212,160,23,0.4)',
-              color: '#F5C842',
-              backdropFilter: 'blur(8px)',
-            }}
+            style={{ background: 'rgba(212,160,23,0.2)', border: '1px solid rgba(212,160,23,0.4)', color: '#F5C842', backdropFilter: 'blur(8px)' }}
           >
             <span>☸</span>
-            Nền Tảng Thi Giáo Lý Phật Giáo
+            {t.site.platform}
           </motion.div>
 
-          {/* Heading */}
           <motion.h2
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -79,7 +63,7 @@ export default function HeroBanner() {
               backgroundClip: 'text',
             }}
           >
-            Từ cơ bản đến nâng cao
+            {t.hero.heading}
           </motion.h2>
 
           <motion.p
@@ -89,10 +73,9 @@ export default function HeroBanner() {
             className="text-sm mb-6 leading-relaxed max-w-sm"
             style={{ color: 'rgba(253,246,227,0.75)' }}
           >
-            Học Pháp - Ôn Luyện - Khảo Thí
+            {t.hero.sub}
           </motion.p>
 
-          {/* CTA */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -102,28 +85,22 @@ export default function HeroBanner() {
             <Link href="/quiz">
               <button className="btn-saffron text-sm">
                 <PenLine size={15} />
-                Làm bài thi ngay
+                {t.hero.startQuiz}
               </button>
             </Link>
             <Link href="/quiz/level">
               <button
                 className="inline-flex items-center gap-2 text-sm font-semibold rounded-xl px-5 py-2.5 transition-all duration-200"
-                style={{
-                  background: 'rgba(253,246,227,0.12)',
-                  border: '1px solid rgba(253,246,227,0.3)',
-                  color: '#FDF6E3',
-                  backdropFilter: 'blur(8px)',
-                }}
+                style={{ background: 'rgba(253,246,227,0.12)', border: '1px solid rgba(253,246,227,0.3)', color: '#FDF6E3', backdropFilter: 'blur(8px)' }}
                 onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(253,246,227,0.22)'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(253,246,227,0.12)'; }}
               >
                 <BarChart2 size={15} />
-                Thi theo trình độ
+                {t.hero.quizByLevel}
               </button>
             </Link>
           </motion.div>
 
-          {/* Mini stats */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -131,9 +108,9 @@ export default function HeroBanner() {
             className="flex gap-5 mt-5"
           >
             {[
-              { value: '500+', label: 'Câu hỏi' },
-              { value: '7',    label: 'Chủ đề' },
-              { value: '4',    label: 'Trình độ' },
+              { value: '500+', label: t.hero.questions },
+              { value: '7',    label: t.hero.topics },
+              { value: '4',    label: t.hero.levels },
             ].map((s) => (
               <div key={s.label}>
                 <p className="font-bold text-base" style={{ color: '#F5C842' }}>{s.value}</p>
@@ -143,42 +120,28 @@ export default function HeroBanner() {
           </motion.div>
         </div>
 
-        {/* Right: decorative Buddha */}
         <motion.div
           initial={{ opacity: 0, scale: 0.85 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.15, type: 'spring', stiffness: 100 }}
           className="hidden md:flex flex-col items-center flex-shrink-0"
         >
-          {/* Halo ring */}
           <div className="relative flex items-center justify-center">
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
               className="absolute"
-              style={{
-                width: 180,
-                height: 180,
-                borderRadius: '50%',
-                border: '1px dashed rgba(212,160,23,0.4)',
-              }}
+              style={{ width: 180, height: 180, borderRadius: '50%', border: '1px dashed rgba(212,160,23,0.4)' }}
             />
             <motion.div
               animate={{ rotate: -360 }}
               transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
               className="absolute"
-              style={{
-                width: 140,
-                height: 140,
-                borderRadius: '50%',
-                border: '1px solid rgba(212,160,23,0.25)',
-              }}
+              style={{ width: 140, height: 140, borderRadius: '50%', border: '1px solid rgba(212,160,23,0.25)' }}
             />
-            {/* Radial glow */}
             <div className="absolute inset-0 rounded-full"
               style={{ background: 'radial-gradient(circle, rgba(212,160,23,0.18) 0%, transparent 70%)' }}
             />
-            {/* Buddha emoji */}
             <motion.div
               animate={{ y: [-6, 6, -6] }}
               transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
@@ -187,8 +150,6 @@ export default function HeroBanner() {
               🧘
             </motion.div>
           </div>
-
-          {/* Floating symbols */}
           <motion.div
             animate={{ y: [4, -4, 4], rotate: [0, -15, 0] }}
             transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
@@ -197,10 +158,8 @@ export default function HeroBanner() {
           >
             ☸️
           </motion.div>
-
-          {/* "Nam Mô..." tagline */}
           <p className="mt-4 text-xs text-center" style={{ color: 'rgba(245,200,66,0.7)', fontFamily: 'Philosopher, serif', letterSpacing: '0.05em' }}>
-            Nam Mô Bổn Sư Thích Ca Mâu Ni Phật
+            {t.hero.mantra}
           </p>
         </motion.div>
       </div>

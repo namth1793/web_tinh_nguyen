@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ChevronRight, Flame, Star, Clock, BookOpen, Trophy } from 'lucide-react';
+import { ChevronRight, Star, BookOpen, Trophy } from 'lucide-react';
 import { useApp } from '@/context/ThemeContext';
+import { useLang } from '@/context/LangContext';
 import { mockBadges, mockLeaderboard } from '@/data/mockData';
 import { LEVEL_NAMES } from '@/constants';
 import ProgressRing from '@/components/shared/ProgressRing';
@@ -11,6 +12,7 @@ import { cn } from '@/lib/utils';
 
 export default function RightSidebar() {
   const { user, stats } = useApp();
+  const { t } = useLang();
   const badges = mockBadges.slice(0, 4);
   const leaderboard = mockLeaderboard.slice(0, 3);
 
@@ -64,7 +66,7 @@ export default function RightSidebar() {
           </div>
 
           <div className="flex-1 min-w-0">
-            <p className="text-xs mb-0.5" style={{ color: 'var(--text-light)' }}>Chào mừng,</p>
+            <p className="text-xs mb-0.5" style={{ color: 'var(--text-light)' }}>{t.sidebar.welcome}</p>
             <h3 className="font-bold truncate" style={{ color: 'var(--text-dark)', fontFamily: "'Philosopher', serif" }}>
               {user.name}
             </h3>
@@ -76,7 +78,7 @@ export default function RightSidebar() {
                 color: '#B8860B',
               }}
             >
-              ☸ Học viên
+              {t.sidebar.student}
             </span>
           </div>
         </div>
@@ -84,7 +86,7 @@ export default function RightSidebar() {
         {/* Level & XP */}
         <div className="mb-4 p-3 rounded-xl" style={{ background: 'rgba(212,160,23,0.06)', border: '1px solid rgba(212,160,23,0.15)' }}>
           <div className="flex justify-between items-center mb-2">
-            <span className="text-xs font-semibold" style={{ color: 'var(--text-dark)' }}>Cấp độ hiện tại</span>
+            <span className="text-xs font-semibold" style={{ color: 'var(--text-dark)' }}>{t.sidebar.currentLevel}</span>
             <span className="text-xs font-bold" style={{ color: '#B8860B' }}>{levelInfo.name}</span>
           </div>
           <div className="progress-bar">
@@ -97,16 +99,16 @@ export default function RightSidebar() {
           </div>
           <div className="flex justify-between mt-1.5">
             <span className="text-[10px]" style={{ color: 'var(--text-light)' }}>{user.xp} XP</span>
-            <span className="text-[10px]" style={{ color: 'var(--text-light)' }}>Mục tiêu: {levelInfo.maxXp} XP</span>
+            <span className="text-[10px]" style={{ color: 'var(--text-light)' }}>{t.sidebar.goal} {levelInfo.maxXp} XP</span>
           </div>
         </div>
 
         {/* Quick stats */}
         <div className="grid grid-cols-3 gap-2">
           {[
-            { label: 'Bài thi', value: stats.total_quizzes, icon: BookOpen, color: '#1A9362' },
-            { label: 'Điểm TB', value: `${stats.avg_score}%`, icon: Star, color: '#B8860B' },
-            { label: 'Top', value: `${stats.rankPercentage}%`, icon: Trophy, color: '#8B2635' },
+            { label: t.sidebar.quizCount,  value: stats.total_quizzes,       icon: BookOpen, color: '#1A9362' },
+            { label: t.sidebar.avgScore,   value: `${stats.avg_score}%`,     icon: Star,     color: '#B8860B' },
+            { label: t.sidebar.top,        value: `${stats.rankPercentage}%`, icon: Trophy,  color: '#8B2635' },
           ].map((s) => (
             <div
               key={s.label}
@@ -129,10 +131,10 @@ export default function RightSidebar() {
         className="card p-5"
       >
         <div className="section-header">
-          <h2 className="text-base">Tiến độ học tập</h2>
+          <h2 className="text-base">{t.sidebar.studyProgress}</h2>
           <Link href="/profile">
             <span className="text-xs font-medium flex items-center gap-1 transition-colors" style={{ color: '#B8860B' }}>
-              Chi tiết <ChevronRight size={12} />
+              {t.sidebar.detail} <ChevronRight size={12} />
             </span>
           </Link>
         </div>
@@ -141,10 +143,10 @@ export default function RightSidebar() {
           <ProgressRing percentage={studyProgress} size={90} strokeWidth={8} />
           <div className="flex-1 space-y-2">
             {[
-              { label: 'Bài đã làm', value: `${stats.total_quizzes}/32` },
-              { label: 'Câu đúng', value: `${stats.total_correct}/${stats.total_questions}` },
-              { label: 'Thời gian học', value: '18h 45m' },
-              { label: 'Chuỗi ngày học', value: `${user.study_days} ngày 🔥` },
+              { label: t.sidebar.doneTasks, value: `${stats.total_quizzes}/32` },
+              { label: t.sidebar.correctAnswers, value: `${stats.total_correct}/${stats.total_questions}` },
+              { label: t.sidebar.studyTime, value: '18h 45m' },
+              { label: t.sidebar.studyStreak, value: `${user.study_days} ${t.sidebar.days} 🔥` },
             ].map((item) => (
               <div key={item.label} className="flex justify-between items-center">
                 <span className="text-xs" style={{ color: 'var(--text-medium)' }}>{item.label}</span>
@@ -163,10 +165,10 @@ export default function RightSidebar() {
         className="card p-5"
       >
         <div className="section-header">
-          <h2 className="text-base">Huy hiệu của tôi</h2>
+          <h2 className="text-base">{t.sidebar.myBadges}</h2>
           <Link href="/profile?tab=badges">
             <span className="text-xs font-medium flex items-center gap-1" style={{ color: '#B8860B' }}>
-              Tất cả <ChevronRight size={12} />
+              {t.sidebar.allBadges} <ChevronRight size={12} />
             </span>
           </Link>
         </div>
@@ -212,10 +214,10 @@ export default function RightSidebar() {
         className="card p-5"
       >
         <div className="section-header">
-          <h2 className="text-base">Bảng xếp hạng</h2>
+          <h2 className="text-base">{t.sidebar.leaderboard}</h2>
           <Link href="/ranking">
             <span className="text-xs font-medium flex items-center gap-1" style={{ color: '#B8860B' }}>
-              Xem tất cả <ChevronRight size={12} />
+              {t.sidebar.viewAll} <ChevronRight size={12} />
             </span>
           </Link>
         </div>
@@ -225,7 +227,7 @@ export default function RightSidebar() {
           className="flex gap-1 mb-3 rounded-xl p-1"
           style={{ background: 'rgba(212,160,23,0.08)', border: '1px solid rgba(212,160,23,0.12)' }}
         >
-          {['Tuần này', 'Tháng này', 'Tổng'].map((tab, i) => (
+          {[t.sidebar.thisWeek, t.sidebar.thisMonth, t.sidebar.total].map((tab, i) => (
             <button
               key={tab}
               className="flex-1 text-xs py-1 rounded-lg font-medium transition-all"
@@ -267,7 +269,7 @@ export default function RightSidebar() {
                     style={{ color: isMe ? '#B8860B' : 'var(--text-dark)' }}
                   >
                     {entry.name}
-                    {isMe && <span className="text-xs font-normal ml-1" style={{ color: 'var(--text-medium)' }}>(Bạn)</span>}
+                    {isMe && <span className="text-xs font-normal ml-1" style={{ color: 'var(--text-medium)' }}>{t.sidebar.you}</span>}
                   </p>
                 </div>
                 <span
@@ -292,13 +294,15 @@ export default function RightSidebar() {
       >
         <div className="text-2xl mb-2" style={{ filter: 'drop-shadow(0 0 6px rgba(212,160,23,0.5))' }}>☸️</div>
         <p className="text-xs font-semibold mb-2" style={{ color: '#B8860B', fontFamily: "'Philosopher', serif" }}>
-          Pháp ngôn hôm nay
+          {t.quote.wisdom}
         </p>
         <div className="lotus-divider"><span style={{ color: '#D4A017', fontSize: 10 }}>🪷</span></div>
         <p className="text-xs mt-2 leading-relaxed italic" style={{ color: 'var(--text-medium)' }}>
-          "Hãy tự mình thắp đuốc lên mà đi. Hãy lấy Chánh pháp làm ngọn đuốc."
+          {t.quote.text.split('\n').map((line, i) => (
+            <span key={i}>{line}{i === 0 && <br />}</span>
+          ))}
         </p>
-        <p className="text-[10px] mt-2" style={{ color: 'var(--text-light)' }}>— Đức Phật Thích Ca Mâu Ni</p>
+        <p className="text-[10px] mt-2" style={{ color: 'var(--text-light)' }}>{t.quote.authorFull}</p>
       </motion.div>
     </aside>
   );

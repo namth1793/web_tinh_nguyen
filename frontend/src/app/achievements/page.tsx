@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Trophy, Star, Flame, Target, TrendingUp, Award } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import { useApp } from '@/context/ThemeContext';
+import { useLang } from '@/context/LangContext';
 import { mockStats } from '@/data/mockData';
 import { LEVEL_NAMES } from '@/constants';
 import ProgressRing from '@/components/shared/ProgressRing';
@@ -52,6 +53,7 @@ const milestones = [
 
 export default function AchievementsPage() {
   const { user } = useApp();
+  const { t } = useLang();
   const stats = mockStats;
   const levelInfo = LEVEL_NAMES[user?.level_id ?? 3] || { name: 'Trung cấp 2', maxXp: 1000 };
   const earned = achievements.filter((a) => a.earned);
@@ -72,10 +74,10 @@ export default function AchievementsPage() {
             className="font-bold mb-2"
             style={{ fontFamily: "'Philosopher', serif", fontSize: 'clamp(1.4rem, 3vw, 2rem)', color: 'var(--text-dark)' }}
           >
-            Thành tích của tôi
+            {t.achievements.title}
           </h1>
           <p className="text-sm" style={{ color: 'var(--text-medium)' }}>
-            Ghi nhận hành trình học hỏi và tu tập Phật pháp của bạn.
+            {t.achievements.subtitle}
           </p>
         </div>
 

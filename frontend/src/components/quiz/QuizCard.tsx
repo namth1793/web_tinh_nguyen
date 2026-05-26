@@ -6,6 +6,7 @@ import { Clock, BookOpen, ChevronRight } from 'lucide-react';
 import { Quiz } from '@/types';
 import { LEVEL_COLORS } from '@/constants';
 import { cn } from '@/lib/utils';
+import { useLang } from '@/context/LangContext';
 
 interface QuizCardProps {
   quiz: Quiz;
@@ -13,6 +14,7 @@ interface QuizCardProps {
 }
 
 export default function QuizCard({ quiz, index = 0 }: QuizCardProps) {
+  const { t } = useLang();
   const levelStyle = LEVEL_COLORS[quiz.level] || { bg: 'bg-gray-100', text: 'text-gray-600', border: '' };
 
   return (
@@ -50,18 +52,18 @@ export default function QuizCard({ quiz, index = 0 }: QuizCardProps) {
       <div className="flex items-center gap-3 text-temple-medium">
         <div className="flex items-center gap-1">
           <BookOpen size={13} />
-          <span className="text-xs">{quiz.question_count} câu hỏi</span>
+          <span className="text-xs">{quiz.question_count} {t.quizCard.questions}</span>
         </div>
         <div className="flex items-center gap-1">
           <Clock size={13} />
-          <span className="text-xs">{quiz.time_limit} phút</span>
+          <span className="text-xs">{quiz.time_limit} {t.quizCard.minutes}</span>
         </div>
       </div>
 
       {/* CTA */}
       <Link href={`/quiz/${quiz.id}`}>
         <button className="w-full py-2 rounded-xl bg-gold-50 dark:bg-gold-900/20 text-gold-600 hover:bg-gold-500 hover:text-white font-medium text-sm transition-all duration-200 flex items-center justify-center gap-1 group">
-          Làm bài thi
+          {t.quizCard.start}
           <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
         </button>
       </Link>

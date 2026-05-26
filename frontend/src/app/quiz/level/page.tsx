@@ -8,8 +8,10 @@ import MainLayout from '@/components/layout/MainLayout';
 import { LEVELS } from '@/constants';
 import { mockQuizzes } from '@/data/mockData';
 import QuizCard from '@/components/quiz/QuizCard';
+import { useLang } from '@/context/LangContext';
 
 export default function QuizLevelPage() {
+  const { t } = useLang();
   const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
 
   const activeLevel = selectedLevel !== null ? LEVELS[selectedLevel] : null;
@@ -30,16 +32,16 @@ export default function QuizLevelPage() {
               color: '#B8860B',
             }}
           >
-            ☸ Hệ thống trình độ Phật pháp
+            ☸ {t.levels.title}
           </div>
           <h1
             className="font-bold mb-2"
             style={{ fontFamily: "'Philosopher', serif", fontSize: 'clamp(1.4rem, 3vw, 2rem)', color: 'var(--text-dark)' }}
           >
-            Thi theo trình độ
+            {t.levels.title}
           </h1>
           <p className="text-sm" style={{ color: 'var(--text-medium)' }}>
-            Chọn cấp độ phù hợp với kiến thức Phật pháp của bạn — từ sơ học đến chuyên sâu.
+            {t.quiz.subtitle}
           </p>
         </div>
 
@@ -70,17 +72,18 @@ export default function QuizLevelPage() {
                   className="text-[10px] font-bold px-2.5 py-0.5 rounded-full mb-4"
                   style={{ background: level.color + '18', color: level.color, border: `1px solid ${level.color}30` }}
                 >
-                  TRÌNH ĐỘ {level.id}
+                  {t.levels.levelBadge} {level.id}
                 </div>
 
                 {/* Icon */}
                 <motion.div
                   animate={isSelected ? { scale: [1, 1.1, 1] } : {}}
                   transition={{ duration: 0.5 }}
-                  className="w-18 h-18 rounded-2xl flex items-center justify-center text-4xl mb-4"
+                  className="flex items-center justify-center text-4xl mb-4"
                   style={{
                     width: 72,
                     height: 72,
+                    borderRadius: '16px',
                     background: `linear-gradient(135deg, ${level.color}18 0%, ${level.color}08 100%)`,
                     border: `2px solid ${level.color}30`,
                     boxShadow: isSelected ? `0 0 20px ${level.color}30` : `0 4px 12px ${level.color}12`,
@@ -105,13 +108,13 @@ export default function QuizLevelPage() {
                   <div className="flex items-center gap-1">
                     <BookOpen size={12} style={{ color: level.color }} />
                     <span className="text-xs font-semibold" style={{ color: 'var(--text-dark)' }}>{level.questionCount}+</span>
-                    <span className="text-xs" style={{ color: 'var(--text-light)' }}>câu</span>
+                    <span className="text-xs" style={{ color: 'var(--text-light)' }}>{t.levels.questionsCount}</span>
                   </div>
                   <div className="w-px h-3" style={{ background: 'var(--border)' }} />
                   <div className="flex items-center gap-1">
                     <Clock size={12} style={{ color: level.color }} />
                     <span className="text-xs font-semibold" style={{ color: 'var(--text-dark)' }}>45</span>
-                    <span className="text-xs" style={{ color: 'var(--text-light)' }}>phút</span>
+                    <span className="text-xs" style={{ color: 'var(--text-light)' }}>{t.common.minutes}</span>
                   </div>
                 </div>
 
@@ -127,9 +130,9 @@ export default function QuizLevelPage() {
                   }}
                 >
                   {isSelected ? (
-                    <><Star size={13} fill="currentColor" /> Đang chọn</>
+                    <><Star size={13} fill="currentColor" /> {t.quizLevel.selected}</>
                   ) : (
-                    <>Chọn trình độ này <ArrowRight size={13} /></>
+                    <>{t.quizLevel.selectThis} <ArrowRight size={13} /></>
                   )}
                 </button>
               </motion.div>
@@ -144,7 +147,6 @@ export default function QuizLevelPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            {/* Divider */}
             <div className="lotus-divider mb-6">
               <span style={{ color: '#D4A017', fontSize: 16 }}>🪷</span>
             </div>
@@ -155,18 +157,15 @@ export default function QuizLevelPage() {
                   className="font-bold text-lg mb-0.5"
                   style={{ fontFamily: "'Philosopher', serif", color: 'var(--text-dark)' }}
                 >
-                  Bài thi trình độ {activeLevel.name}
+                  {t.quizLevel.examsForLevel} {activeLevel.name}
                 </h2>
                 <p className="text-xs" style={{ color: 'var(--text-medium)' }}>
-                  {filteredQuizzes.length} bài thi khả dụng
+                  {filteredQuizzes.length} {t.quizLevel.available}
                 </p>
               </div>
               <Link href="/quiz">
-                <span
-                  className="text-sm font-medium"
-                  style={{ color: '#B8860B' }}
-                >
-                  Thi theo chủ đề →
+                <span className="text-sm font-medium" style={{ color: '#B8860B' }}>
+                  {t.quizLevel.byTopic}
                 </span>
               </Link>
             </div>
@@ -184,10 +183,10 @@ export default function QuizLevelPage() {
               >
                 <div className="text-4xl mb-3">{activeLevel.icon}</div>
                 <p className="font-semibold mb-1" style={{ color: 'var(--text-dark)' }}>
-                  Chưa có bài thi cho trình độ {activeLevel.name}
+                  {t.quizLevel.noExams} {activeLevel.name}
                 </p>
                 <p className="text-sm" style={{ color: 'var(--text-medium)' }}>
-                  Nội dung đang được chuẩn bị, vui lòng quay lại sau.
+                  {t.quizLevel.noExamsSub}
                 </p>
               </div>
             )}
@@ -199,10 +198,10 @@ export default function QuizLevelPage() {
           <div className="text-center py-10">
             <div className="text-4xl mb-3" style={{ filter: 'drop-shadow(0 0 8px rgba(212,160,23,0.4))' }}>☸️</div>
             <p className="font-semibold" style={{ fontFamily: "'Philosopher', serif", color: 'var(--text-dark)' }}>
-              Hãy chọn trình độ phù hợp với bạn
+              {t.quizLevel.prompt}
             </p>
             <p className="text-sm mt-1" style={{ color: 'var(--text-medium)' }}>
-              Mỗi trình độ có hệ thống câu hỏi được xây dựng riêng biệt
+              {t.quizLevel.promptSub}
             </p>
           </div>
         )}

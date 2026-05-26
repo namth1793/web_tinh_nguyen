@@ -10,11 +10,13 @@ import QuestionCard from '@/components/quiz/QuestionCard';
 import QuizTimer from '@/components/quiz/QuizTimer';
 import ProgressRing from '@/components/shared/ProgressRing';
 import { mockQuizzes, mockQuizQuestions } from '@/data/mockData';
+import { useLang } from '@/context/LangContext';
 import { cn } from '@/lib/utils';
 
 export default function QuizDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { t } = useLang();
   const quizId = Number(params.id);
   const quiz = mockQuizzes.find((q) => q.id === quizId) || mockQuizzes[0];
   const questions = mockQuizQuestions;
@@ -62,11 +64,9 @@ export default function QuizDetailPage() {
           >
             <div className="text-6xl mb-4">{passed ? '🎉' : '😔'}</div>
             <h2 className="text-2xl font-black text-temple-dark dark:text-cream-100 mb-1">
-              {passed ? 'Chúc mừng! Bạn đã đạt!' : 'Chưa đạt - Hãy thử lại!'}
+              {passed ? t.quizDetail.congratsPassed : t.quizDetail.notPassed}
             </h2>
-            <p className="text-temple-medium mb-6">
-              {quiz.title}
-            </p>
+            <p className="text-temple-medium mb-6">{quiz.title}</p>
 
             <div className="flex justify-center mb-6">
               <ProgressRing
@@ -74,15 +74,15 @@ export default function QuizDetailPage() {
                 size={140}
                 strokeWidth={12}
                 color={passed ? '#16a34a' : '#ef4444'}
-                label={passed ? 'Đạt' : 'Chưa đạt'}
+                label={passed ? t.recent.passed : t.recent.failed}
               />
             </div>
 
             <div className="grid grid-cols-3 gap-4 mb-6">
               {[
-                { label: 'Câu đúng', value: `${correctCount}/${questions.length}` },
-                { label: 'Điểm số', value: `${score}%` },
-                { label: 'Thời gian', value: `${timeSpent} phút` },
+                { label: t.quizDetail.correctCount, value: `${correctCount}/${questions.length}` },
+                { label: t.quizDetail.score, value: `${score}%` },
+                { label: t.quizDetail.time, value: `${timeSpent} ${t.common.minutes}` },
               ].map((s) => (
                 <div key={s.label} className="bg-cream-50 dark:bg-[#3A2A10] rounded-xl p-3">
                   <p className="text-xl font-black text-gold-500">{s.value}</p>
@@ -93,7 +93,7 @@ export default function QuizDetailPage() {
 
             {/* XP gained */}
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-gold-100 dark:bg-gold-900/30 rounded-xl text-gold-700 dark:text-gold-400 font-semibold text-sm mb-6">
-              ⚡ +{Math.floor(score * 0.5 + (passed ? 20 : 5))} XP nhận được!
+              ⚡ +{Math.floor(score * 0.5 + (passed ? 20 : 5))} {t.quizDetail.xpEarned}
             </div>
 
             <div className="flex gap-3 justify-center">
@@ -101,11 +101,11 @@ export default function QuizDetailPage() {
                 onClick={() => { setStarted(false); setCurrentIndex(0); setAnswers({}); setShowResult(false); setFinished(false); }}
                 className="flex items-center gap-2 btn-outline-gold"
               >
-                <RotateCcw size={16} /> Làm lại
+                <RotateCcw size={16} /> {t.quizDetail.retry}
               </button>
               <Link href="/dashboard">
                 <button className="flex items-center gap-2 btn-gold">
-                  <Home size={16} /> Về trang chủ
+                  <Home size={16} /> {t.quizDetail.backHome}
                 </button>
               </Link>
             </div>
@@ -121,7 +121,7 @@ export default function QuizDetailPage() {
         <div className="max-w-2xl mx-auto py-8 page-enter">
           <div className="card p-8">
             <Link href="/quiz" className="inline-flex items-center gap-2 text-sm text-temple-medium hover:text-gold-500 mb-6 transition-colors">
-              <ArrowLeft size={16} /> Quay lại danh sách
+              <ArrowLeft size={16} /> {t.quizDetail.backToList}
             </Link>
 
             <div className="text-center mb-6">
@@ -132,9 +132,9 @@ export default function QuizDetailPage() {
 
             <div className="grid grid-cols-3 gap-4 mb-6">
               {[
-                { icon: '📝', label: 'Câu hỏi', value: `${questions.length} câu` },
-                { icon: '⏱️', label: 'Thời gian', value: `${quiz.time_limit} phút` },
-                { icon: '✅', label: 'Điểm đạt', value: '60%' },
+                { icon: '📝', label: t.quizDetail.questions, value: `${questions.length} ${t.quizDetail.questions}` },
+                { icon: '⏱️', label: t.quizDetail.time, value: `${quiz.time_limit} ${t.common.minutes}` },
+                { icon: '✅', label: t.quizDetail.passMark, value: '60%' },
               ].map((s) => (
                 <div key={s.label} className="bg-cream-50 dark:bg-[#3A2A10] rounded-xl p-3 text-center">
                   <div className="text-2xl mb-1">{s.icon}</div>
@@ -146,7 +146,7 @@ export default function QuizDetailPage() {
 
             <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 mb-6">
               <p className="text-sm text-amber-800 dark:text-amber-200">
-                💡 <strong>Lưu ý:</strong> Bài thi sẽ tự động kết thúc khi hết thời gian. Hãy bình tâm và suy nghĩ kỹ trước khi chọn đáp án.
+                💡 <strong>{t.quizDetail.note}</strong> {t.quizDetail.noteText}
               </p>
             </div>
 
@@ -154,7 +154,7 @@ export default function QuizDetailPage() {
               onClick={() => setStarted(true)}
               className="w-full btn-gold py-3 text-base"
             >
-              🚀 Bắt đầu làm bài
+              {t.quizDetail.startNow}
             </button>
           </div>
         </div>
@@ -171,7 +171,7 @@ export default function QuizDetailPage() {
         <div className="flex items-center justify-between mb-4">
           <Link href="/quiz">
             <button className="flex items-center gap-1.5 text-sm text-temple-medium hover:text-gold-500 transition-colors">
-              <ArrowLeft size={16} /> Thoát
+              <ArrowLeft size={16} /> {t.quizDetail.exit}
             </button>
           </Link>
           <h2 className="text-sm font-semibold text-temple-dark dark:text-cream-100 text-center flex-1 px-4 truncate">{quiz.title}</h2>
@@ -198,7 +198,7 @@ export default function QuizDetailPage() {
             disabled={currentIndex === 0}
             className={cn('flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all', currentIndex === 0 ? 'opacity-30 cursor-not-allowed text-temple-medium' : 'text-temple-medium hover:bg-cream-100 dark:hover:bg-[#3A2A10]')}
           >
-            <ArrowLeft size={16} /> Câu trước
+            <ArrowLeft size={16} /> {t.quizDetail.prev}
           </button>
 
           {showResult ? (
@@ -206,10 +206,13 @@ export default function QuizDetailPage() {
               onClick={handleNext}
               className="flex items-center gap-2 btn-gold"
             >
-              {currentIndex < questions.length - 1 ? (<>Câu tiếp <ArrowRight size={16} /></>) : (<><CheckCircle size={16} /> Nộp bài</>)}
+              {currentIndex < questions.length - 1
+                ? <>{t.quizDetail.next} <ArrowRight size={16} /></>
+                : <><CheckCircle size={16} /> {t.quizDetail.submit}</>
+              }
             </button>
           ) : (
-            <span className="text-sm text-temple-medium">Chọn đáp án để tiếp tục</span>
+            <span className="text-sm text-temple-medium">{t.quizDetail.selectAnswer}</span>
           )}
         </div>
       </div>

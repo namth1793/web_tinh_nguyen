@@ -5,15 +5,16 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { mockTopics } from '@/data/mockData';
+import { useLang } from '@/context/LangContext';
 
 export default function CategorySection() {
   const router = useRouter();
+  const { t } = useLang();
 
   return (
     <section className="mb-6">
-      {/* Section header */}
       <div className="section-header">
-        <h2>Thi theo chủ đề</h2>
+        <h2>{t.categories.title}</h2>
         <Link href="/quiz">
           <span
             className="text-sm font-medium flex items-center gap-1 transition-colors"
@@ -21,13 +22,14 @@ export default function CategorySection() {
             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = '#D4A017'; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = '#B8860B'; }}
           >
-            Xem tất cả <ChevronRight size={14} />
+            {t.categories.viewAll} <ChevronRight size={14} />
           </span>
         </Link>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {mockTopics.map((topic, i) => (
+
           <motion.div
             key={topic.id}
             initial={{ opacity: 0, scale: 0.85 }}
@@ -71,7 +73,7 @@ export default function CategorySection() {
                     {topic.name}
                   </p>
                   <p className="text-[10px] mt-0.5" style={{ color: `${topic.color}99` }}>
-                    {topic.children?.length ?? 0} chủ đề con
+                    {topic.children?.length ?? 0} {t.categories.subTopics}
                   </p>
                 </div>
               </div>
@@ -104,7 +106,7 @@ export default function CategorySection() {
                       color: `${topic.color}80`,
                     }}
                   >
-                    +{topic.children.length - 3} chủ đề nữa
+                    +{topic.children.length - 3} {t.categories.moreTopics}
                   </span>
                 )}
               </div>
@@ -112,7 +114,7 @@ export default function CategorySection() {
               {/* Question count pill */}
               <div className="mt-2.5 pt-2" style={{ borderTop: `1px solid ${topic.color}15` }}>
                 <span className="text-[9px] font-medium" style={{ color: `${topic.color}99` }}>
-                  {topic.question_count}+ câu hỏi
+                  {topic.question_count}+ {t.categories.questionsCount}
                 </span>
               </div>
             </div>

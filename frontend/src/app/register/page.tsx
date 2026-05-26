@@ -6,19 +6,16 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Loader2, CheckCircle2, ArrowLeft } from 'lucide-react';
 import { useApp } from '@/context/ThemeContext';
+import { useLang } from '@/context/LangContext';
 import { authApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
-const BENEFITS = [
-  { icon: '📊', text: 'Theo dõi tiến độ học tập cá nhân' },
-  { icon: '🏆', text: 'Thi đua bảng xếp hạng toàn quốc' },
-  { icon: '🎖️', text: 'Nhận huy hiệu & thành tích đặc biệt' },
-  { icon: '⚡', text: 'Tích lũy XP & nâng cấp trình độ' },
-];
+const BENEFIT_ICONS = ['📊', '🏆', '🎖️', '⚡'];
 
 export default function RegisterPage() {
   const router = useRouter();
   const { login } = useApp();
+  const { t } = useLang();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -40,15 +37,15 @@ export default function RegisterPage() {
     return s;
   })();
 
-  const strengthLabel = ['', 'Yếu', 'Trung bình', 'Mạnh', 'Rất mạnh'][passwordStrength];
+  const strengthLabel = t.register.strengthLabels[passwordStrength];
   const strengthColor = ['', 'bg-red-400', 'bg-yellow-400', 'bg-blue-400', 'bg-green-500'][passwordStrength];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (password !== confirmPassword) return setError('Mật khẩu xác nhận không khớp.');
-    if (!agreed) return setError('Vui lòng đồng ý với điều khoản sử dụng.');
-    if (password.length < 6) return setError('Mật khẩu phải có ít nhất 6 ký tự.');
+    if (password !== confirmPassword) return setError(t.register.confirmPlaceholder);
+    if (!agreed) return setError(t.register.agree + ' ' + t.register.termsLink);
+    if (password.length < 6) return setError(t.register.passwordPlaceholder);
 
     setLoading(true);
     try {
@@ -56,7 +53,7 @@ export default function RegisterPage() {
       login(res.data.token, res.data.user);
       router.push('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Đăng ký thất bại. Vui lòng thử lại.');
+      setError(err.response?.data?.error || t.common.error);
     } finally {
       setLoading(false);
     }
@@ -73,7 +70,7 @@ export default function RegisterPage() {
         <Link href="/dashboard">
           <span className="inline-flex items-center gap-2 text-sm text-temple-medium hover:text-gold-500 transition-colors font-medium group">
             <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-            Quay về trang chủ
+            {t.register.backHome}
           </span>
         </Link>
       </motion.div>
@@ -97,8 +94,8 @@ export default function RegisterPage() {
               <div className="flex items-center gap-3 cursor-pointer">
                 <span className="text-4xl" style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))' }}>🪷</span>
                 <div>
-                  <h1 className="font-black text-white text-lg leading-tight">PHẬT PHÁP TEST</h1>
-                  <p className="text-amber-100 text-xs">Học Phật · Hiểu Pháp · An Lạc</p>
+                  <h1 className="font-black text-white text-lg leading-tight">{t.site.name.toUpperCase()}</h1>
+                  <p className="text-amber-100 text-xs">{t.site.tagline}</p>
                 </div>
               </div>
             </Link>
@@ -114,9 +111,9 @@ export default function RegisterPage() {
             >
               ☸️
             </motion.div>
-            <h2 className="text-xl font-black text-white text-center mb-4">Tại sao nên tham gia?</h2>
+            <h2 className="text-xl font-black text-white text-center mb-4">{t.register.whyJoin}</h2>
             <div className="space-y-3">
-              {BENEFITS.map((b, i) => (
+              {t.register.benefits.map((text, i) => (
                 <motion.div
                   key={i}
                   initial={{ opacity: 0, x: -20 }}
@@ -124,8 +121,8 @@ export default function RegisterPage() {
                   transition={{ delay: 0.2 + i * 0.1 }}
                   className="flex items-center gap-3 bg-white/15 backdrop-blur-sm rounded-xl px-3 py-2.5 border border-white/20"
                 >
-                  <span className="text-xl">{b.icon}</span>
-                  <p className="text-amber-50 text-xs leading-tight">{b.text}</p>
+                  <span className="text-xl">{BENEFIT_ICONS[i]}</span>
+                  <p className="text-amber-50 text-xs leading-tight">{text}</p>
                 </motion.div>
               ))}
             </div>
@@ -133,7 +130,7 @@ export default function RegisterPage() {
 
           {/* Bottom */}
           <div className="relative z-10 text-center">
-            <p className="text-amber-200 text-xs">Miễn phí · Không quảng cáo · Thuần Phật pháp</p>
+            <p className="text-amber-200 text-xs">{t.register.free}</p>
           </div>
         </motion.div>
 
@@ -147,15 +144,15 @@ export default function RegisterPage() {
           {/* Mobile logo */}
           <div className="flex items-center gap-2 mb-5 md:hidden">
             <span className="text-3xl">🪷</span>
-            <span className="font-black text-gold-500 text-lg">PHẬT PHÁP TEST</span>
+            <span className="font-black text-gold-500 text-lg">{t.site.name.toUpperCase()}</span>
           </div>
 
           <div className="mb-6">
-            <h2 className="text-2xl font-black text-temple-dark dark:text-cream-100 mb-1">Tạo tài khoản</h2>
+            <h2 className="text-2xl font-black text-temple-dark dark:text-cream-100 mb-1">{t.register.heading}</h2>
             <p className="text-sm text-temple-medium">
-              Đã có tài khoản?{' '}
+              {t.register.hasAccount}{' '}
               <Link href="/login" className="text-gold-500 hover:text-gold-600 font-semibold transition-colors">
-                Đăng nhập
+                {t.register.loginLink}
               </Link>
             </p>
           </div>
@@ -174,14 +171,14 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Name */}
             <div>
-              <label className="block text-sm font-semibold text-temple-dark dark:text-cream-200 mb-1.5">Họ và tên</label>
+              <label className="block text-sm font-semibold text-temple-dark dark:text-cream-200 mb-1.5">{t.register.name}</label>
               <div className="relative">
                 <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-temple-medium" />
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Nguyễn Văn A"
+                  placeholder={t.register.namePlaceholder}
                   required
                   className="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-cream-200 dark:border-[#3A2A10] bg-cream-50 dark:bg-[#1A1208] text-sm text-temple-dark dark:text-cream-100 placeholder-temple-medium/60 focus:outline-none focus:border-gold-400 dark:focus:border-gold-500 transition-all"
                 />
@@ -190,7 +187,7 @@ export default function RegisterPage() {
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-semibold text-temple-dark dark:text-cream-200 mb-1.5">Email</label>
+              <label className="block text-sm font-semibold text-temple-dark dark:text-cream-200 mb-1.5">{t.register.email}</label>
               <div className="relative">
                 <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-temple-medium" />
                 <input
@@ -206,14 +203,14 @@ export default function RegisterPage() {
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-semibold text-temple-dark dark:text-cream-200 mb-1.5">Mật khẩu</label>
+              <label className="block text-sm font-semibold text-temple-dark dark:text-cream-200 mb-1.5">{t.register.password}</label>
               <div className="relative">
                 <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-temple-medium" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Tối thiểu 6 ký tự"
+                  placeholder={t.register.passwordPlaceholder}
                   required
                   className="w-full pl-10 pr-11 py-3 rounded-xl border-2 border-cream-200 dark:border-[#3A2A10] bg-cream-50 dark:bg-[#1A1208] text-sm text-temple-dark dark:text-cream-100 placeholder-temple-medium/60 focus:outline-none focus:border-gold-400 dark:focus:border-gold-500 transition-all"
                 />
@@ -229,21 +226,21 @@ export default function RegisterPage() {
                       <div key={i} className={cn('flex-1 h-1 rounded-full transition-all duration-300', i <= passwordStrength ? strengthColor : 'bg-cream-200 dark:bg-[#3A2A10]')} />
                     ))}
                   </div>
-                  <p className="text-xs text-temple-medium">Độ mạnh: <span className="font-medium">{strengthLabel}</span></p>
+                  <p className="text-xs text-temple-medium">{t.register.strength} <span className="font-medium">{strengthLabel}</span></p>
                 </div>
               )}
             </div>
 
             {/* Confirm password */}
             <div>
-              <label className="block text-sm font-semibold text-temple-dark dark:text-cream-200 mb-1.5">Xác nhận mật khẩu</label>
+              <label className="block text-sm font-semibold text-temple-dark dark:text-cream-200 mb-1.5">{t.register.confirmPassword}</label>
               <div className="relative">
                 <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-temple-medium" />
                 <input
                   type={showConfirm ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Nhập lại mật khẩu"
+                  placeholder={t.register.confirmPlaceholder}
                   required
                   className={cn(
                     'w-full pl-10 pr-11 py-3 rounded-xl border-2 bg-cream-50 dark:bg-[#1A1208] text-sm text-temple-dark dark:text-cream-100 placeholder-temple-medium/60 focus:outline-none transition-all',
@@ -273,11 +270,11 @@ export default function RegisterPage() {
                 className="mt-0.5 w-4 h-4 rounded border-cream-300 accent-gold-500"
               />
               <label htmlFor="terms" className="text-xs text-temple-medium cursor-pointer leading-relaxed">
-                Tôi đã đọc và đồng ý với{' '}
-                <span className="text-gold-500 hover:underline">Điều khoản sử dụng</span>
-                {' '}và{' '}
-                <span className="text-gold-500 hover:underline">Chính sách bảo mật</span>
-                {' '}của Phật Pháp Test.
+                {t.register.agree}{' '}
+                <span className="text-gold-500 hover:underline">{t.register.termsLink}</span>
+                {' '}{t.register.and}{' '}
+                <span className="text-gold-500 hover:underline">{t.register.privacy}</span>
+                {t.register.privacyOf}
               </label>
             </div>
 
@@ -295,9 +292,9 @@ export default function RegisterPage() {
               )}
             >
               {loading ? (
-                <><Loader2 size={17} className="animate-spin" /> Đang tạo tài khoản...</>
+                <><Loader2 size={17} className="animate-spin" /> {t.register.loading}</>
               ) : (
-                <>Tạo tài khoản <ArrowRight size={17} /></>
+                <>{t.register.submit} <ArrowRight size={17} /></>
               )}
             </motion.button>
           </form>
@@ -305,7 +302,7 @@ export default function RegisterPage() {
           {/* Back to login */}
           <div className="mt-6 text-center">
             <Link href="/login" className="text-sm text-temple-medium hover:text-gold-500 transition-colors flex items-center justify-center gap-1">
-              ← Quay lại đăng nhập
+              {t.register.backLogin}
             </Link>
           </div>
         </motion.div>

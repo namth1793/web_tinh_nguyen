@@ -6,17 +6,24 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader2, ArrowLeft } from 'lucide-react';
 import { useApp } from '@/context/ThemeContext';
+import { useLang } from '@/context/LangContext';
 import { authApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
 const DEMO_ACCOUNTS = [
-  { label: 'Học viên (Minh Tâm)', email: 'minhtam@gmail.com', password: 'password123', icon: '🧘' },
-  { label: 'Admin', email: 'admin@phatphap.vn', password: 'admin123', icon: '⚡' },
+  { labelKey: 'student' as const, email: 'minhtam@gmail.com', password: 'password123', icon: '🧘' },
+  { labelKey: 'admin' as const, email: 'admin@phatphap.vn', password: 'admin123', icon: '⚡' },
 ];
+
+const DEMO_LABELS = {
+  student: { vi: 'Học viên (Minh Tâm)', 'zh-CN': '学员（明心）', 'zh-TW': '學員（明心）' },
+  admin:   { vi: 'Admin', 'zh-CN': '管理员', 'zh-TW': '管理員' },
+};
 
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useApp();
+  const { t, lang } = useLang();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -33,7 +40,7 @@ export default function LoginPage() {
       login(res.data.token, res.data.user);
       router.push(res.data.user.role === 'admin' ? '/admin' : '/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Đăng nhập thất bại. Vui lòng thử lại.');
+      setError(err.response?.data?.error || t.common.error);
     } finally {
       setLoading(false);
     }
@@ -56,7 +63,7 @@ export default function LoginPage() {
         <Link href="/dashboard">
           <span className="inline-flex items-center gap-2 text-sm text-temple-medium hover:text-gold-500 transition-colors font-medium group">
             <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-            Quay về trang chủ
+            {t.login.backHome}
           </span>
         </Link>
       </motion.div>
@@ -71,7 +78,6 @@ export default function LoginPage() {
           className="hidden md:flex flex-col justify-between w-2/5 p-10 relative overflow-hidden"
           style={{ background: 'linear-gradient(135deg, #F59E0B 0%, #D4A017 40%, #B45309 100%)' }}
         >
-          {/* Decorative circles */}
           <div className="absolute -top-20 -left-20 w-64 h-64 rounded-full bg-white/10" />
           <div className="absolute -bottom-16 -right-16 w-56 h-56 rounded-full bg-black/10" />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full bg-white/5 border border-white/20" />
@@ -82,8 +88,8 @@ export default function LoginPage() {
               <div className="flex items-center gap-3 mb-3 cursor-pointer">
                 <span className="text-4xl" style={{ filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.3))' }}>🪷</span>
                 <div>
-                  <h1 className="font-black text-white text-lg leading-tight">PHẬT PHÁP TEST</h1>
-                  <p className="text-amber-100 text-xs">Học Phật · Hiểu Pháp · An Lạc</p>
+                  <h1 className="font-black text-white text-lg leading-tight">{t.site.name.toUpperCase()}</h1>
+                  <p className="text-amber-100 text-xs">{t.site.tagline}</p>
                 </div>
               </div>
             </Link>
@@ -100,20 +106,18 @@ export default function LoginPage() {
               🧘
             </motion.div>
             <h2 className="text-2xl font-black text-white leading-tight mb-3">
-              Chào mừng trở lại!
+              {t.login.welcome}
             </h2>
             <p className="text-amber-100 text-sm leading-relaxed">
-              Tiếp tục hành trình học Phật pháp của bạn. Mỗi ngày một chút trí tuệ, cuộc sống thêm an lạc.
+              {t.login.welcomeSub}
             </p>
           </div>
 
           {/* Bottom quote */}
           <div className="relative z-10">
             <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 border border-white/30">
-              <p className="text-amber-50 text-xs italic leading-relaxed">
-                "Tâm bình thì thế giới bình. Tâm an thì vạn sự an."
-              </p>
-              <p className="text-amber-200 text-xs mt-2 font-medium">— Lời Phật dạy</p>
+              <p className="text-amber-50 text-xs italic leading-relaxed">{t.login.quote}</p>
+              <p className="text-amber-200 text-xs mt-2 font-medium">{t.login.quoteAuthor}</p>
             </div>
           </div>
         </motion.div>
@@ -128,24 +132,24 @@ export default function LoginPage() {
           {/* Mobile logo */}
           <div className="flex items-center gap-2 mb-6 md:hidden">
             <span className="text-3xl">🪷</span>
-            <span className="font-black text-gold-500 text-lg">PHẬT PHÁP TEST</span>
+            <span className="font-black text-gold-500 text-lg">{t.site.name.toUpperCase()}</span>
           </div>
 
           <div className="mb-8">
             <h2 className="text-2xl font-black text-temple-dark dark:text-cream-100 mb-1">
-              Đăng nhập
+              {t.login.heading}
             </h2>
             <p className="text-sm text-temple-medium">
-              Chưa có tài khoản?{' '}
+              {t.login.noAccount}{' '}
               <Link href="/register" className="text-gold-500 hover:text-gold-600 font-semibold transition-colors">
-                Đăng ký ngay
+                {t.login.registerNow}
               </Link>
             </p>
           </div>
 
           {/* Demo accounts */}
           <div className="mb-6">
-            <p className="text-xs text-temple-medium mb-2 font-medium">Đăng nhập nhanh (demo):</p>
+            <p className="text-xs text-temple-medium mb-2 font-medium">{t.login.demoLogin}</p>
             <div className="flex gap-2">
               {DEMO_ACCOUNTS.map((acc) => (
                 <button
@@ -155,7 +159,9 @@ export default function LoginPage() {
                 >
                   <span className="text-lg">{acc.icon}</span>
                   <div>
-                    <p className="text-xs font-semibold text-temple-dark dark:text-cream-100 leading-tight">{acc.label}</p>
+                    <p className="text-xs font-semibold text-temple-dark dark:text-cream-100 leading-tight">
+                      {DEMO_LABELS[acc.labelKey][lang]}
+                    </p>
                     <p className="text-[10px] text-temple-medium">{acc.email}</p>
                   </div>
                 </button>
@@ -165,7 +171,7 @@ export default function LoginPage() {
 
           <div className="flex items-center gap-3 mb-6">
             <hr className="flex-1 border-cream-200 dark:border-[#3A2A10]" />
-            <span className="text-xs text-temple-medium px-2">hoặc đăng nhập bằng email</span>
+            <span className="text-xs text-temple-medium px-2">{t.login.orEmail}</span>
             <hr className="flex-1 border-cream-200 dark:border-[#3A2A10]" />
           </div>
 
@@ -185,7 +191,7 @@ export default function LoginPage() {
             {/* Email */}
             <div>
               <label className="block text-sm font-semibold text-temple-dark dark:text-cream-200 mb-1.5">
-                Email
+                {t.login.email}
               </label>
               <div className="relative">
                 <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-temple-medium" />
@@ -207,10 +213,10 @@ export default function LoginPage() {
             <div>
               <div className="flex justify-between items-center mb-1.5">
                 <label className="block text-sm font-semibold text-temple-dark dark:text-cream-200">
-                  Mật khẩu
+                  {t.login.password}
                 </label>
                 <button type="button" className="text-xs text-gold-500 hover:text-gold-600 font-medium transition-colors">
-                  Quên mật khẩu?
+                  {t.login.forgotPassword}
                 </button>
               </div>
               <div className="relative">
@@ -244,7 +250,7 @@ export default function LoginPage() {
                 className="w-4 h-4 rounded border-cream-300 text-gold-500 focus:ring-gold-400 accent-gold-500"
               />
               <label htmlFor="remember" className="text-sm text-temple-medium cursor-pointer select-none">
-                Ghi nhớ đăng nhập
+                {t.login.rememberMe}
               </label>
             </div>
 
@@ -262,23 +268,22 @@ export default function LoginPage() {
               )}
             >
               {loading ? (
-                <><Loader2 size={17} className="animate-spin" /> Đang đăng nhập...</>
+                <><Loader2 size={17} className="animate-spin" /> {t.login.loading}</>
               ) : (
-                <>Đăng nhập <ArrowRight size={17} /></>
+                <>{t.login.submit} <ArrowRight size={17} /></>
               )}
             </motion.button>
           </form>
 
           {/* Footer */}
           <p className="text-center text-xs text-temple-medium mt-6">
-            Bằng cách đăng nhập, bạn đồng ý với{' '}
-            <span className="text-gold-500 cursor-pointer hover:underline">Điều khoản sử dụng</span>
-            {' '}và{' '}
-            <span className="text-gold-500 cursor-pointer hover:underline">Chính sách bảo mật</span>
+            {t.login.terms}{' '}
+            <span className="text-gold-500 cursor-pointer hover:underline">{t.login.termsLink}</span>
+            {' '}{t.login.and}{' '}
+            <span className="text-gold-500 cursor-pointer hover:underline">{t.login.privacy}</span>
           </p>
         </motion.div>
       </div>
     </div>
   );
 }
-

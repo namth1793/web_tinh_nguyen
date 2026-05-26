@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { HelpCircle, ChevronDown, ChevronUp, BookOpen, Award, BarChart2, Crown, Play } from 'lucide-react';
 import Link from 'next/link';
 import MainLayout from '@/components/layout/MainLayout';
+import { useLang } from '@/context/LangContext';
 import { cn } from '@/lib/utils';
 
 const STEPS = [
@@ -73,6 +74,7 @@ const FEATURES = [
 ];
 
 export default function GuidePage() {
+  const { t } = useLang();
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   return (
@@ -88,8 +90,8 @@ export default function GuidePage() {
           >
             📚
           </motion.div>
-          <h1 className="text-2xl font-black text-temple-dark dark:text-cream-100 mb-2">Hướng dẫn sử dụng</h1>
-          <p className="text-temple-medium text-sm">Tất cả mọi thứ bạn cần biết để bắt đầu học Phật pháp cùng chúng tôi</p>
+          <h1 className="text-2xl font-black text-temple-dark dark:text-cream-100 mb-2">{t.guide.title}</h1>
+          <p className="text-temple-medium text-sm">{t.guide.subtitle}</p>
         </div>
 
         {/* Quick features */}
@@ -117,7 +119,7 @@ export default function GuidePage() {
         {/* Steps */}
         <div className="mb-10">
           <h2 className="text-xl font-black text-temple-dark dark:text-cream-100 mb-5 flex items-center gap-2">
-            <Play size={20} className="text-gold-500" /> Bắt đầu như thế nào?
+            <Play size={20} className="text-gold-500" /> {t.guide.howToStart}
           </h2>
           <div className="space-y-4">
             {STEPS.map((step, i) => (
@@ -147,7 +149,7 @@ export default function GuidePage() {
 
         {/* XP Table */}
         <div className="card p-6 mb-10">
-          <h2 className="text-lg font-black text-temple-dark dark:text-cream-100 mb-4">⚡ Bảng XP & Cấp độ</h2>
+          <h2 className="text-lg font-black text-temple-dark dark:text-cream-100 mb-4">{t.guide.xpTable}</h2>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -181,7 +183,7 @@ export default function GuidePage() {
         {/* FAQ */}
         <div className="mb-8">
           <h2 className="text-xl font-black text-temple-dark dark:text-cream-100 mb-5 flex items-center gap-2">
-            <HelpCircle size={22} className="text-gold-500" /> Câu hỏi thường gặp
+            <HelpCircle size={22} className="text-gold-500" /> {t.guide.faq}
           </h2>
           <div className="space-y-2">
             {FAQS.map((faq, i) => (
@@ -230,10 +232,10 @@ export default function GuidePage() {
           transition={{ delay: 0.5 }}
           className="card p-6 text-center border-gold-200 dark:border-gold-800 bg-gold-50/50 dark:bg-gold-900/10"
         >
-          <p className="font-bold text-temple-dark dark:text-cream-100 mb-1">Vẫn còn thắc mắc?</p>
-          <p className="text-sm text-temple-medium mb-4">Đặt câu hỏi trong cộng đồng hoặc liên hệ trực tiếp với đội ngũ.</p>
+          <p className="font-bold text-temple-dark dark:text-cream-100 mb-1">{t.guide.stillQuestion}</p>
+          <p className="text-sm text-temple-medium mb-4">{t.guide.contactDesc}</p>
           <Link href="/qa">
-            <button className="btn-gold">Đến trang Hỏi đáp</button>
+            <button className="btn-gold">{t.guide.goToQA}</button>
           </Link>
         </motion.div>
       </div>
