@@ -5,18 +5,18 @@ import { motion } from 'framer-motion';
 import { ArrowRight, BookOpen, Clock, Star } from 'lucide-react';
 import Link from 'next/link';
 import MainLayout from '@/components/layout/MainLayout';
-import { LEVELS } from '@/constants';
-import { mockQuizzes } from '@/data/mockData';
 import QuizCard from '@/components/quiz/QuizCard';
 import { useLang } from '@/context/LangContext';
+import { useMockData } from '@/hooks/useMockData';
 
 export default function QuizLevelPage() {
   const { t } = useLang();
+  const { levels, quizzes, getLevelName } = useMockData();
   const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
 
-  const activeLevel = selectedLevel !== null ? LEVELS[selectedLevel] : null;
+  const activeLevel = selectedLevel !== null ? levels[selectedLevel] : null;
   const filteredQuizzes = activeLevel
-    ? mockQuizzes.filter((q) => q.level === activeLevel.name)
+    ? quizzes.filter((q) => q.level === activeLevel._viName)
     : [];
 
   return (
@@ -47,7 +47,7 @@ export default function QuizLevelPage() {
 
         {/* Level cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-          {LEVELS.map((level, i) => {
+          {levels.map((level, i) => {
             const isSelected = selectedLevel === i;
             return (
               <motion.div
@@ -173,7 +173,7 @@ export default function QuizLevelPage() {
             {filteredQuizzes.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredQuizzes.map((quiz, i) => (
-                  <QuizCard key={quiz.id} quiz={quiz} index={i} />
+                  <QuizCard key={quiz.id} quiz={quiz} index={i} getLevelName={getLevelName} />
                 ))}
               </div>
             ) : (

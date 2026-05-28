@@ -3,14 +3,14 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import MainLayout from '@/components/layout/MainLayout';
-import { mockBadges } from '@/data/mockData';
 import { useLang } from '@/context/LangContext';
+import { useMockData } from '@/hooks/useMockData';
 
 export default function BadgesPage() {
   const { t } = useLang();
+  const { badges } = useMockData();
   const categories = [t.common.all, 'Học tập', 'Thời gian', 'Xã hội', 'Đặc biệt'];
   const [activeCategory, setActiveCategory] = useState(categories[0]);
-  const badges = mockBadges;
   const earnedCount = badges.length;
 
   return (

@@ -5,20 +5,23 @@ import { motion } from 'framer-motion';
 import { ChevronRight, Star, BookOpen, Trophy } from 'lucide-react';
 import { useApp } from '@/context/ThemeContext';
 import { useLang } from '@/context/LangContext';
-import { mockBadges, mockLeaderboard } from '@/data/mockData';
+import { mockLeaderboard } from '@/data/mockData';
 import { LEVEL_NAMES } from '@/constants';
+import { useMockData } from '@/hooks/useMockData';
 import ProgressRing from '@/components/shared/ProgressRing';
 import { cn } from '@/lib/utils';
 
 export default function RightSidebar() {
   const { user, stats } = useApp();
   const { t } = useLang();
-  const badges = mockBadges.slice(0, 4);
+  const { badges: allBadges, getXpLevelName } = useMockData();
+  const badges = allBadges.slice(0, 4);
   const leaderboard = mockLeaderboard.slice(0, 3);
 
   if (!user) return null;
 
   const levelInfo = LEVEL_NAMES[user.level_id] || { name: 'Trung cấp 2', maxXp: 1000 };
+  const levelDisplayName = getXpLevelName(user.level_id);
   const prevMaxXp = LEVEL_NAMES[user.level_id - 1]?.maxXp || 0;
   const xpProgress = Math.min(100, Math.round(((user.xp - prevMaxXp) / (levelInfo.maxXp - prevMaxXp)) * 100));
   const studyProgress = stats.total_questions > 0
@@ -87,7 +90,7 @@ export default function RightSidebar() {
         <div className="mb-4 p-3 rounded-xl" style={{ background: 'rgba(212,160,23,0.06)', border: '1px solid rgba(212,160,23,0.15)' }}>
           <div className="flex justify-between items-center mb-2">
             <span className="text-xs font-semibold" style={{ color: 'var(--text-dark)' }}>{t.sidebar.currentLevel}</span>
-            <span className="text-xs font-bold" style={{ color: '#B8860B' }}>{levelInfo.name}</span>
+            <span className="text-xs font-bold" style={{ color: '#B8860B' }}>{levelDisplayName}</span>
           </div>
           <div className="progress-bar">
             <motion.div

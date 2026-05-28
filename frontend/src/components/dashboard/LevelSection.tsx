@@ -3,11 +3,12 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ChevronRight, ArrowRight } from 'lucide-react';
-import { LEVELS } from '@/constants';
 import { useLang } from '@/context/LangContext';
+import { useMockData } from '@/hooks/useMockData';
 
 export default function LevelSection() {
   const { t } = useLang();
+  const { levels } = useMockData();
   return (
     <section className="mb-6">
       <div className="section-header">
@@ -25,7 +26,7 @@ export default function LevelSection() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {LEVELS.map((level, i) => (
+        {levels.map((level, i) => (
           <motion.div
             key={level.id}
             initial={{ opacity: 0, y: 20 }}
@@ -67,7 +68,7 @@ export default function LevelSection() {
               {level.questionCount}+ {t.levels.questionsCount}
             </div>
 
-            <Link href={`/quiz?level=${encodeURIComponent(level.name)}`} className="w-full">
+            <Link href={`/quiz?level=${encodeURIComponent(level._viName)}`} className="w-full">
               <button
                 className="w-full py-2 rounded-xl text-white text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-1.5"
                 style={{ background: `linear-gradient(135deg, ${level.color} 0%, ${level.color}CC 100%)`, boxShadow: `0 2px 8px ${level.color}30` }}

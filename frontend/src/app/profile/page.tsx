@@ -8,20 +8,21 @@ import ProgressRing from '@/components/shared/ProgressRing';
 import RecentExamsTable from '@/components/dashboard/RecentExamsTable';
 import { useApp } from '@/context/ThemeContext';
 import { useLang } from '@/context/LangContext';
-import { mockBadges } from '@/data/mockData';
 import { LEVEL_NAMES } from '@/constants';
+import { useMockData } from '@/hooks/useMockData';
 import { cn } from '@/lib/utils';
 
 export default function ProfilePage() {
   const { user, stats } = useApp();
   const { t } = useLang();
+  const { badges: mockBadgesTranslated, getXpLevelName } = useMockData();
   const [activeTab, setActiveTab] = useState('overview');
   const tabs = [
     { key: 'overview', label: t.profile.tabs.overview, icon: Trophy },
     { key: 'results', label: t.profile.tabs.history, icon: FileText },
   ];
   // Dùng badges từ user object (API) nếu có, fallback về mockBadges cho demo
-  const badges = user?.badges?.length ? user.badges : mockBadges;
+  const badges = user?.badges?.length ? user.badges : mockBadgesTranslated;
 
   if (!user) return (
     <MainLayout>
@@ -34,6 +35,7 @@ export default function ProfilePage() {
   );
 
   const levelInfo = LEVEL_NAMES[user.level_id] || { name: 'Trung cấp 2', maxXp: 1000 };
+  const levelDisplayName = getXpLevelName(user.level_id);
   const prevMaxXp = LEVEL_NAMES[user.level_id - 1]?.maxXp || 0;
   const xpProgress = Math.min(100, Math.round(((user.xp - prevMaxXp) / (levelInfo.maxXp - prevMaxXp)) * 100));
   const studyProgress = stats.total_questions > 0
@@ -68,7 +70,7 @@ export default function ProfilePage() {
                   <p className="text-sm text-temple-medium">{user.email}</p>
                 </div>
                 <span className="badge-level bg-gold-100 dark:bg-gold-900/30 text-gold-700 dark:text-gold-400 text-xs">
-                  {levelInfo.name}
+                  {levelDisplayName}
                 </span>
               </div>
 

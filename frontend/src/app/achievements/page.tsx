@@ -7,6 +7,7 @@ import { useApp } from '@/context/ThemeContext';
 import { useLang } from '@/context/LangContext';
 import { mockStats } from '@/data/mockData';
 import { LEVEL_NAMES } from '@/constants';
+import { useMockData } from '@/hooks/useMockData';
 import ProgressRing from '@/components/shared/ProgressRing';
 
 const achievements = [
@@ -54,8 +55,10 @@ const milestones = [
 export default function AchievementsPage() {
   const { user } = useApp();
   const { t } = useLang();
+  const { getXpLevelName } = useMockData();
   const stats = mockStats;
   const levelInfo = LEVEL_NAMES[user?.level_id ?? 3] || { name: 'Trung cấp 2', maxXp: 1000 };
+  const levelDisplayName = getXpLevelName(user?.level_id ?? 3);
   const earned = achievements.filter((a) => a.earned);
 
   return (
@@ -111,7 +114,7 @@ export default function AchievementsPage() {
               >
                 🏅
               </div>
-              <p className="text-xs font-semibold" style={{ color: '#B8860B' }}>{levelInfo.name}</p>
+              <p className="text-xs font-semibold" style={{ color: '#B8860B' }}>{levelDisplayName}</p>
               <p className="text-[10px]" style={{ color: 'var(--text-light)' }}>{user?.xp ?? 750} XP</p>
             </div>
           </div>

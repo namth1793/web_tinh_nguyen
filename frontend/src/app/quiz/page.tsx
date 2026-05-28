@@ -5,13 +5,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import QuizCard from '@/components/quiz/QuizCard';
-import { mockQuizzes, mockTopics, getChildIds } from '@/data/mockData';
-import { LEVELS } from '@/constants';
+import { getChildIds } from '@/data/mockData';
 import { cn } from '@/lib/utils';
 import { useLang } from '@/context/LangContext';
+import { useMockData } from '@/hooks/useMockData';
 
 export default function QuizPage() {
   const { t } = useLang();
+  const { topics, quizzes, levels } = useMockData();
   const [search, setSearch] = useState('');
   const [selectedLevel, setSelectedLevel] = useState<string>('');
   const [selectedParent, setSelectedParent] = useState<number | null>(null);
@@ -19,16 +20,16 @@ export default function QuizPage() {
 
   // Sub-topics của parent đang chọn
   const subTopics = useMemo(
-    () => mockTopics.find(tp => tp.id === selectedParent)?.children ?? [],
-    [selectedParent],
+    () => topics.find(tp => tp.id === selectedParent)?.children ?? [],
+    [selectedParent, topics],
   );
   const parentColor = useMemo(
-    () => mockTopics.find(tp => tp.id === selectedParent)?.color ?? '#D4A017',
-    [selectedParent],
+    () => topics.find(tp => tp.id === selectedParent)?.color ?? '#D4A017',
+    [selectedParent, topics],
   );
 
   const filtered = useMemo(() => {
-    return mockQuizzes.filter((q) => {
+    return quizzes.filter((q) => {
       if (search && !q.title.toLowerCase().includes(search.toLowerCase())) return false;
       if (selectedLevel && q.level !== selectedLevel) return false;
       if (selectedTopic) {
@@ -39,7 +40,7 @@ export default function QuizPage() {
       }
       return true;
     });
-  }, [search, selectedLevel, selectedTopic, selectedParent]);
+  }, [search, selectedLevel, selectedTopic, selectedParent, quizzes]);
 
   return (
     <MainLayout showRightSidebar={false}>
@@ -77,12 +78,12 @@ export default function QuizPage() {
               >
                 {t.quiz.allLevels}
               </button>
-              {LEVELS.map((l) => (
+              {levels.map((l) => (
                 <button
-                  key={l.name}
-                  onClick={() => setSelectedLevel(l.name === selectedLevel ? '' : l.name)}
-                  className={cn('px-3 py-1.5 rounded-xl text-xs font-medium transition-all', selectedLevel === l.name ? 'text-white' : 'bg-cream-100 dark:bg-[#3A2A10] text-temple-medium hover:text-temple-dark')}
-                  style={selectedLevel === l.name ? { backgroundColor: l.color } : {}}
+                  key={l._viName}
+                  onClick={() => setSelectedLevel(l._viName === selectedLevel ? '' : l._viName)}
+                  className={cn('px-3 py-1.5 rounded-xl text-xs font-medium transition-all', selectedLevel === l._viName ? 'text-white' : 'bg-cream-100 dark:bg-[#3A2A10] text-temple-medium hover:text-temple-dark')}
+                  style={selectedLevel === l._viName ? { backgroundColor: l.color } : {}}
                 >
                   {l.icon} {l.name}
                 </button>
@@ -92,7 +93,7 @@ export default function QuizPage() {
 
           {/* Parent topic filter */}
           <div className="flex gap-2 mt-3 flex-wrap">
-            {mockTopics.map((tp) => (
+            {topics.map((tp) => (
               <button
                 key={tp.id}
                 onClick={() => {
@@ -170,7 +171,7 @@ export default function QuizPage() {
         {filtered.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((quiz, i) => (
-              <QuizCard key={quiz.id} quiz={quiz} index={i} />
+              <QuizCard key={quiz.id} quiz={quiz} index={i} getLevelName={(v) => levels.find(l => l._viName === v)?.name ?? v} />
             ))}
           </div>
         ) : (

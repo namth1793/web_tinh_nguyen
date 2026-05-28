@@ -9,17 +9,17 @@ import MainLayout from '@/components/layout/MainLayout';
 import QuestionCard from '@/components/quiz/QuestionCard';
 import QuizTimer from '@/components/quiz/QuizTimer';
 import ProgressRing from '@/components/shared/ProgressRing';
-import { mockQuizzes, mockQuizQuestions } from '@/data/mockData';
 import { useLang } from '@/context/LangContext';
+import { useMockData } from '@/hooks/useMockData';
 import { cn } from '@/lib/utils';
 
 export default function QuizDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { t } = useLang();
+  const { quizzes, questions, getLevelName } = useMockData();
   const quizId = Number(params.id);
-  const quiz = mockQuizzes.find((q) => q.id === quizId) || mockQuizzes[0];
-  const questions = mockQuizQuestions;
+  const quiz = quizzes.find((q) => q.id === quizId) || quizzes[0];
 
   const [started, setStarted] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -127,7 +127,7 @@ export default function QuizDetailPage() {
             <div className="text-center mb-6">
               <div className="text-5xl mb-4">{quiz.topic_icon || '📚'}</div>
               <h1 className="text-2xl font-black text-temple-dark dark:text-cream-100 mb-2">{quiz.title}</h1>
-              <span className="badge-level bg-gold-100 text-gold-700 text-sm px-3 py-1">{quiz.level}</span>
+              <span className="badge-level bg-gold-100 text-gold-700 text-sm px-3 py-1">{getLevelName(quiz.level)}</span>
             </div>
 
             <div className="grid grid-cols-3 gap-4 mb-6">

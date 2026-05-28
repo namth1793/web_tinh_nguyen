@@ -4,12 +4,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
-import { mockTopics } from '@/data/mockData';
 import { useLang } from '@/context/LangContext';
+import { useMockData } from '@/hooks/useMockData';
 
 export default function CategorySection() {
   const router = useRouter();
   const { t } = useLang();
+  const { topics } = useMockData();
 
   return (
     <section className="mb-6">
@@ -28,7 +29,7 @@ export default function CategorySection() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        {mockTopics.map((topic, i) => (
+        {topics.map((topic, i) => (
 
           <motion.div
             key={topic.id}

@@ -11,11 +11,13 @@ import { useLang } from '@/context/LangContext';
 interface QuizCardProps {
   quiz: Quiz;
   index?: number;
+  getLevelName?: (viName: string) => string;
 }
 
-export default function QuizCard({ quiz, index = 0 }: QuizCardProps) {
+export default function QuizCard({ quiz, index = 0, getLevelName }: QuizCardProps) {
   const { t } = useLang();
   const levelStyle = LEVEL_COLORS[quiz.level] || { bg: 'bg-gray-100', text: 'text-gray-600', border: '' };
+  const levelDisplay = getLevelName ? getLevelName(quiz.level) : quiz.level;
 
   return (
     <motion.div
@@ -34,7 +36,7 @@ export default function QuizCard({ quiz, index = 0 }: QuizCardProps) {
           {quiz.topic_icon || '📚'}
         </div>
         <span className={cn('badge-level ml-auto', levelStyle.bg, levelStyle.text)}>
-          {quiz.level}
+          {levelDisplay}
         </span>
       </div>
 

@@ -3,13 +3,14 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ChevronRight, CheckCircle, XCircle, Clock } from 'lucide-react';
-import { mockRecentResults } from '@/data/mockData';
 import { LEVEL_COLORS } from '@/constants';
 import { cn } from '@/lib/utils';
 import { useLang } from '@/context/LangContext';
+import { useMockData } from '@/hooks/useMockData';
 
 export default function RecentExamsTable() {
   const { t } = useLang();
+  const { recentResults, getLevelName } = useMockData();
 
   return (
     <section className="mb-6">
@@ -40,7 +41,7 @@ export default function RecentExamsTable() {
               </tr>
             </thead>
             <tbody>
-              {mockRecentResults.map((result, i) => {
+              {recentResults.map((result, i) => {
                 const levelStyle = LEVEL_COLORS[result.level] || { bg: 'bg-gray-100', text: 'text-gray-600', border: '' };
                 return (
                   <motion.tr
@@ -67,7 +68,7 @@ export default function RecentExamsTable() {
                     {/* Level */}
                     <td className="px-4 py-3">
                       <span className={cn('badge-level text-xs', levelStyle.bg, levelStyle.text)}>
-                        {result.level}
+                        {getLevelName(result.level)}
                       </span>
                     </td>
 
