@@ -8,10 +8,12 @@ import MainLayout from '@/components/layout/MainLayout';
 import QuizCard from '@/components/quiz/QuizCard';
 import { useLang } from '@/context/LangContext';
 import { useMockData } from '@/hooks/useMockData';
+import { useApiQuizzes } from '@/hooks/useApiQuizzes';
 
 export default function QuizLevelPage() {
   const { t } = useLang();
-  const { levels, quizzes, getLevelName } = useMockData();
+  const { levels } = useMockData();
+  const { quizzes, getLevelName } = useApiQuizzes();
   const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
 
   const activeLevel = selectedLevel !== null ? levels[selectedLevel] : null;

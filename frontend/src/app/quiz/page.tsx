@@ -2,29 +2,31 @@
 
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X } from 'lucide-react';
+import { Search, X, Loader2 } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 import QuizCard from '@/components/quiz/QuizCard';
 import { getChildIds } from '@/data/mockData';
 import { cn } from '@/lib/utils';
 import { useLang } from '@/context/LangContext';
 import { useMockData } from '@/hooks/useMockData';
+import { useApiQuizzes } from '@/hooks/useApiQuizzes';
 
 export default function QuizPage() {
   const { t } = useLang();
-  const { topics, quizzes, levels } = useMockData();
+  const { topics, levels } = useMockData();
+  const { quizzes, loading, getLevelName } = useApiQuizzes();
+
   const [search, setSearch] = useState('');
   const [selectedLevel, setSelectedLevel] = useState<string>('');
   const [selectedParent, setSelectedParent] = useState<number | null>(null);
   const [selectedTopic, setSelectedTopic] = useState<number | null>(null);
 
-  // Sub-topics của parent đang chọn
   const subTopics = useMemo(
-    () => topics.find(tp => tp.id === selectedParent)?.children ?? [],
+    () => topics.find((tp) => tp.id === selectedParent)?.children ?? [],
     [selectedParent, topics],
   );
   const parentColor = useMemo(
-    () => topics.find(tp => tp.id === selectedParent)?.color ?? '#D4A017',
+    () => topics.find((tp) => tp.id === selectedParent)?.color ?? '#D4A017',
     [selectedParent, topics],
   );
 
@@ -97,17 +99,12 @@ export default function QuizPage() {
               <button
                 key={tp.id}
                 onClick={() => {
-                  if (selectedParent === tp.id) {
-                    setSelectedParent(null);
-                    setSelectedTopic(null);
-                  } else {
-                    setSelectedParent(tp.id);
-                    setSelectedTopic(null);
-                  }
+                  if (selectedParent === tp.id) { setSelectedParent(null); setSelectedTopic(null); }
+                  else { setSelectedParent(tp.id); setSelectedTopic(null); }
                 }}
                 className={cn(
                   'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border-2 transition-all',
-                  selectedParent === tp.id ? 'text-white border-transparent' : 'border-cream-200 dark:border-[#3A2A10] text-temple-medium hover:border-gold-300'
+                  selectedParent === tp.id ? 'text-white border-transparent' : 'border-cream-200 dark:border-[#3A2A10] text-temple-medium hover:border-gold-300',
                 )}
                 style={selectedParent === tp.id ? { backgroundColor: tp.color, borderColor: tp.color } : {}}
               >
@@ -135,12 +132,11 @@ export default function QuizPage() {
                       onClick={() => setSelectedTopic(selectedTopic === st.id ? null : st.id)}
                       className={cn(
                         'flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium border transition-all',
-                        selectedTopic === st.id ? 'text-white border-transparent' : 'border-cream-200 dark:border-[#3A2A10] text-temple-medium hover:border-opacity-50'
+                        selectedTopic === st.id ? 'text-white border-transparent' : 'border-cream-200 dark:border-[#3A2A10] text-temple-medium',
                       )}
                       style={selectedTopic === st.id
                         ? { backgroundColor: parentColor, borderColor: parentColor }
-                        : { borderColor: `${parentColor}40` }
-                      }
+                        : { borderColor: `${parentColor}40` }}
                     >
                       <span>{st.icon}</span>
                       {st.name.split('(')[0].trim()}
@@ -167,14 +163,23 @@ export default function QuizPage() {
           )}
         </div>
 
+        {/* Loading */}
+        {loading && (
+          <div className="flex justify-center py-16">
+            <Loader2 size={32} className="animate-spin text-gold-500" />
+          </div>
+        )}
+
         {/* Grid */}
-        {filtered.length > 0 ? (
+        {!loading && filtered.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((quiz, i) => (
-              <QuizCard key={quiz.id} quiz={quiz} index={i} getLevelName={(v) => levels.find(l => l._viName === v)?.name ?? v} />
+              <QuizCard key={quiz.id} quiz={quiz} index={i} getLevelName={getLevelName} />
             ))}
           </div>
-        ) : (
+        )}
+
+        {!loading && filtered.length === 0 && (
           <div className="text-center py-16">
             <div className="text-6xl mb-4">🔍</div>
             <h3 className="text-lg font-semibold text-temple-dark dark:text-cream-100 mb-2">{t.quiz.noResults}</h3>

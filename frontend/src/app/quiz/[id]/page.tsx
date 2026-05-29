@@ -1,25 +1,23 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, CheckCircle, RotateCcw, Home } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle, RotateCcw, Home, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import MainLayout from '@/components/layout/MainLayout';
 import QuestionCard from '@/components/quiz/QuestionCard';
 import QuizTimer from '@/components/quiz/QuizTimer';
 import ProgressRing from '@/components/shared/ProgressRing';
 import { useLang } from '@/context/LangContext';
-import { useMockData } from '@/hooks/useMockData';
+import { useApiQuizDetail } from '@/hooks/useApiQuizzes';
 import { cn } from '@/lib/utils';
 
 export default function QuizDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const { t } = useLang();
-  const { quizzes, questions, getLevelName } = useMockData();
   const quizId = Number(params.id);
-  const quiz = quizzes.find((q) => q.id === quizId) || quizzes[0];
+  const { quiz, questions, loading, getLevelName } = useApiQuizDetail(quizId);
 
   const [started, setStarted] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -46,13 +44,38 @@ export default function QuizDetailPage() {
 
   const handleTimeUp = useCallback(() => {
     setFinished(true);
-    setTimeSpent(quiz.time_limit);
-  }, [quiz.time_limit]);
+    setTimeSpent(quiz?.time_limit ?? 0);
+  }, [quiz?.time_limit]);
 
   const correctCount = questions.filter((q, i) => answers[i] === q.correct_answer).length;
-  const score = Math.round((correctCount / questions.length) * 100);
+  const score = questions.length > 0 ? Math.round((correctCount / questions.length) * 100) : 0;
   const passed = score >= 60;
 
+  // Loading state
+  if (loading) {
+    return (
+      <MainLayout showRightSidebar={false}>
+        <div className="flex justify-center items-center py-32">
+          <Loader2 size={36} className="animate-spin text-gold-500" />
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Quiz not found
+  if (!quiz) {
+    return (
+      <MainLayout showRightSidebar={false}>
+        <div className="max-w-2xl mx-auto py-16 text-center">
+          <div className="text-6xl mb-4">📭</div>
+          <h2 className="text-xl font-bold text-temple-dark dark:text-cream-100 mb-2">Không tìm thấy bộ đề</h2>
+          <Link href="/quiz"><button className="btn-gold mt-4">← Quay lại danh sách</button></Link>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Result screen
   if (finished) {
     return (
       <MainLayout showRightSidebar={false}>
@@ -81,8 +104,8 @@ export default function QuizDetailPage() {
             <div className="grid grid-cols-3 gap-4 mb-6">
               {[
                 { label: t.quizDetail.correctCount, value: `${correctCount}/${questions.length}` },
-                { label: t.quizDetail.score, value: `${score}%` },
-                { label: t.quizDetail.time, value: `${timeSpent} ${t.common.minutes}` },
+                { label: t.quizDetail.score,         value: `${score}%` },
+                { label: t.quizDetail.time,          value: `${timeSpent} ${t.common.minutes}` },
               ].map((s) => (
                 <div key={s.label} className="bg-cream-50 dark:bg-[#3A2A10] rounded-xl p-3">
                   <p className="text-xl font-black text-gold-500">{s.value}</p>
@@ -91,7 +114,6 @@ export default function QuizDetailPage() {
               ))}
             </div>
 
-            {/* XP gained */}
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-gold-100 dark:bg-gold-900/30 rounded-xl text-gold-700 dark:text-gold-400 font-semibold text-sm mb-6">
               ⚡ +{Math.floor(score * 0.5 + (passed ? 20 : 5))} {t.quizDetail.xpEarned}
             </div>
@@ -115,6 +137,7 @@ export default function QuizDetailPage() {
     );
   }
 
+  // Start screen
   if (!started) {
     return (
       <MainLayout showRightSidebar={false}>
@@ -127,35 +150,44 @@ export default function QuizDetailPage() {
             <div className="text-center mb-6">
               <div className="text-5xl mb-4">{quiz.topic_icon || '📚'}</div>
               <h1 className="text-2xl font-black text-temple-dark dark:text-cream-100 mb-2">{quiz.title}</h1>
-              <span className="badge-level bg-gold-100 text-gold-700 text-sm px-3 py-1">{getLevelName(quiz.level)}</span>
+              <span className="badge-level bg-gold-100 text-gold-700 text-sm px-3 py-1">
+                {getLevelName(quiz.level)}
+              </span>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              {[
-                { icon: '📝', label: t.quizDetail.questions, value: `${questions.length} ${t.quizDetail.questions}` },
-                { icon: '⏱️', label: t.quizDetail.time, value: `${quiz.time_limit} ${t.common.minutes}` },
-                { icon: '✅', label: t.quizDetail.passMark, value: '60%' },
-              ].map((s) => (
-                <div key={s.label} className="bg-cream-50 dark:bg-[#3A2A10] rounded-xl p-3 text-center">
-                  <div className="text-2xl mb-1">{s.icon}</div>
-                  <p className="font-bold text-temple-dark dark:text-cream-100">{s.value}</p>
-                  <p className="text-xs text-temple-medium">{s.label}</p>
+            {questions.length === 0 ? (
+              <div className="text-center py-8 rounded-xl mb-6" style={{ border: '2px dashed rgba(212,160,23,0.3)', background: 'rgba(212,160,23,0.04)' }}>
+                <div className="text-4xl mb-3">📝</div>
+                <p className="font-semibold text-temple-dark dark:text-cream-100 mb-1">Bộ đề chưa có câu hỏi</p>
+                <p className="text-sm text-temple-medium">Admin chưa thêm câu hỏi cho bộ đề này</p>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-3 gap-4 mb-6">
+                  {[
+                    { icon: '📝', label: t.quizDetail.questions, value: `${questions.length} ${t.quizDetail.questions}` },
+                    { icon: '⏱️', label: t.quizDetail.time,      value: `${quiz.time_limit} ${t.common.minutes}` },
+                    { icon: '✅', label: t.quizDetail.passMark,  value: '60%' },
+                  ].map((s) => (
+                    <div key={s.label} className="bg-cream-50 dark:bg-[#3A2A10] rounded-xl p-3 text-center">
+                      <div className="text-2xl mb-1">{s.icon}</div>
+                      <p className="font-bold text-temple-dark dark:text-cream-100">{s.value}</p>
+                      <p className="text-xs text-temple-medium">{s.label}</p>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
 
-            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 mb-6">
-              <p className="text-sm text-amber-800 dark:text-amber-200">
-                💡 <strong>{t.quizDetail.note}</strong> {t.quizDetail.noteText}
-              </p>
-            </div>
+                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 mb-6">
+                  <p className="text-sm text-amber-800 dark:text-amber-200">
+                    💡 <strong>{t.quizDetail.note}</strong> {t.quizDetail.noteText}
+                  </p>
+                </div>
 
-            <button
-              onClick={() => setStarted(true)}
-              className="w-full btn-gold py-3 text-base"
-            >
-              {t.quizDetail.startNow}
-            </button>
+                <button onClick={() => setStarted(true)} className="w-full btn-gold py-3 text-base">
+                  {t.quizDetail.startNow}
+                </button>
+              </>
+            )}
           </div>
         </div>
       </MainLayout>
@@ -174,7 +206,9 @@ export default function QuizDetailPage() {
               <ArrowLeft size={16} /> {t.quizDetail.exit}
             </button>
           </Link>
-          <h2 className="text-sm font-semibold text-temple-dark dark:text-cream-100 text-center flex-1 px-4 truncate">{quiz.title}</h2>
+          <h2 className="text-sm font-semibold text-temple-dark dark:text-cream-100 text-center flex-1 px-4 truncate">
+            {quiz.title}
+          </h2>
           <QuizTimer totalSeconds={quiz.time_limit * 60} onTimeUp={handleTimeUp} />
         </div>
 
@@ -202,10 +236,7 @@ export default function QuizDetailPage() {
           </button>
 
           {showResult ? (
-            <button
-              onClick={handleNext}
-              className="flex items-center gap-2 btn-gold"
-            >
+            <button onClick={handleNext} className="flex items-center gap-2 btn-gold">
               {currentIndex < questions.length - 1
                 ? <>{t.quizDetail.next} <ArrowRight size={16} /></>
                 : <><CheckCircle size={16} /> {t.quizDetail.submit}</>
