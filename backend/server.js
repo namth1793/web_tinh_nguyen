@@ -7,29 +7,39 @@ const { initDatabase } = require('./database/init');
 const app = express();
 const PORT = process.env.PORT || 5030;
 
-// Parse allowed origins from env var
-const allowedOrigins = process.env.CORS_ORIGIN
+// Always-allowed origins (production domains + dev)
+const STATIC_ORIGINS = [
+  'https://phaphaptest.org',
+  'https://www.phaphaptest.org',
+  'http://localhost:3000',
+  'http://localhost:3030',
+];
+
+// Additional origins from env var (optional)
+const envOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map((s) => s.trim().replace(/\/$/, ''))
   : [];
 
-const corsOptions = {
-  origin: (origin, callback) => {
-    // Allow server-to-server requests (no origin header)
-    if (!origin) return callback(null, true);
-    // Dev mode: no CORS_ORIGIN set → allow all
-    if (allowedOrigins.length === 0) return callback(null, true);
-    // Check whitelist
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    callback(new Error(`CORS blocked: ${origin}`));
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-};
+const allowedOrigins = [...new Set([...STATIC_ORIGINS, ...envOrigins])];
 
-// Handle OPTIONS preflight for every route FIRST
-app.options('*', cors(corsOptions));
-app.use(cors(corsOptions));
+// Manual CORS headers middleware — runs before everything else
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (!origin || allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin || '*');
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', origin); // still set it, let browser decide
+  }
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With');
+
+  // Respond immediately to preflight OPTIONS request
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+  next();
+});
 
 app.use(express.json());
 
@@ -46,14 +56,10 @@ app.use('/api/badges',      require('./routes/badges'));
 app.use('/api/topics',      require('./routes/topics'));
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Phat Phap Test API is running' });
+  res.json({ status: 'OK', message: 'Phat Phap Test API is running', allowedOrigins });
 });
 
 app.listen(PORT, () => {
   console.log(`Backend running on port ${PORT}`);
-  if (allowedOrigins.length > 0) {
-    console.log(`CORS allowed origins: ${allowedOrigins.join(', ')}`);
-  } else {
-    console.log('CORS: dev mode — all origins allowed');
-  }
+  console.log(`CORS allowed: ${allowedOrigins.join(', ')}`);
 });
