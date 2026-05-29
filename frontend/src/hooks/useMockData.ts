@@ -1,19 +1,28 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useLang } from '@/context/LangContext';
-import { mockTopics, mockQuizzes, mockQuizQuestions, mockRecentResults, mockBadges } from '@/data/mockData';
+import { mockTopics, mockQuizzes, mockRecentResults, mockBadges } from '@/data/mockData';
 import { LEVELS, LEVEL_NAMES } from '@/constants';
 import {
   topicNames, subTopicNames, quizTitles, levelNameMap,
   levelDescMap, xpLevelNames, badgeTranslations, questionData,
 } from '@/i18n/quizData';
+import { loadTranslation, TRANS_EVENT } from '@/i18n/translationStore';
 import type { Topic, SubTopic, Quiz, QuizResult, Badge, Level } from '@/types';
 
 export type TranslatedLevel = Level & { _viName: string };
 
 export function useMockData() {
   const { lang } = useLang();
+
+  // Rerender when admin saves a translation
+  const [transVersion, setTransVersion] = useState(0);
+  useEffect(() => {
+    const handler = () => setTransVersion((v) => v + 1);
+    window.addEventListener(TRANS_EVENT, handler);
+    return () => window.removeEventListener(TRANS_EVENT, handler);
+  }, []);
 
   const topics = useMemo<Topic[]>(() =>
     mockTopics.map((tp) => ({
@@ -27,12 +36,19 @@ export function useMockData() {
   [lang]);
 
   const quizzes = useMemo<Quiz[]>(() =>
-    mockQuizzes.map((q) => ({
-      ...q,
-      title:      quizTitles[q.id]?.[lang] ?? q.title,
-      topic_name: subTopicNames[q.topic_id]?.[lang] ?? q.topic_name,
-    })),
-  [lang]);
+    mockQuizzes.map((q) => {
+      let title = quizTitles[q.id]?.[lang] ?? q.title;
+      // Override with admin-saved translation if available
+      if (lang !== 'vi') {
+        const saved = loadTranslation(q.id);
+        if (saved?.[lang as 'zh-CN' | 'zh-TW']?.title) {
+          title = saved[lang as 'zh-CN' | 'zh-TW'].title;
+        }
+      }
+      return { ...q, title, topic_name: subTopicNames[q.topic_id]?.[lang] ?? q.topic_name };
+    }),
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  [lang, transVersion]);
 
   const questions = useMemo(() =>
     questionData.map((qd) => {

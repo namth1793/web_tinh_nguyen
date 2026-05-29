@@ -8,6 +8,7 @@ import {
   X, CheckCircle2, XCircle, Download, Clock, Star, BarChart3, Shield,
   ArrowUpRight, Bell, Moon, Sun, Save,
   ListOrdered, AlignLeft, Tag, HelpCircle,
+  Globe, Loader2, RefreshCw,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
@@ -17,6 +18,7 @@ import { mockTopics, allSubTopics } from '@/data/mockData';
 import { LEVELS } from '@/constants';
 import { cn } from '@/lib/utils';
 import type { Question } from '@/types';
+import { saveTranslation, loadTranslation, hasTranslation, type TData, type TQuestion } from '@/i18n/translationStore';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5030/api';
 
@@ -560,6 +562,347 @@ function DeleteConfirm({ name, onClose, onConfirm }: { name: string; onClose: ()
   );
 }
 
+// ─── Translation Modal ────────────────────────────────────────────────────────
+type LangKey = 'zh-CN' | 'zh-TW';
+const LANG_LABELS: Record<LangKey, string> = { 'zh-CN': '🇨🇳 简体中文', 'zh-TW': '🇹🇼 繁體中文' };
+const OPT_KEYS: Array<keyof TQuestion> = ['option_a', 'option_b', 'option_c', 'option_d'];
+const OPT_LABELS = ['A', 'B', 'C', 'D'];
+
+function TranslationModal({ quiz, onClose }: { quiz: any; onClose: () => void }) {
+  type Step = 'idle' | 'fetching' | 'translating' | 'done' | 'error';
+  const [step, setStep] = useState<Step>('idle');
+  const [error, setError] = useState('');
+  const [saved, setSaved] = useState(false);
+  const [questions, setQuestions] = useState<Question[]>(
+    Array.isArray(quiz.questions) && quiz.questions.length > 0 ? quiz.questions : [],
+  );
+  const [data, setData] = useState<TData | null>(() => {
+    const existing = loadTranslation(quiz.id);
+    return existing;
+  });
+  const [activeLang, setActiveLang] = useState<LangKey>('zh-CN');
+
+  // If data already loaded from localStorage, jump to done
+  useEffect(() => {
+    if (data) setStep('done');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Fetch questions from API if not available
+  useEffect(() => {
+    if (data) return; // already have saved translation, no need to fetch just yet
+    if (questions.length > 0) return;
+    if (!quiz.id) { setStep('error'); setError('Bộ đề chưa có câu hỏi. Vui lòng thêm câu hỏi trước rồi dịch.'); return; }
+    setStep('fetching');
+    fetch(`${API_BASE}/quizzes/${quiz.id}/questions`)
+      .then((r) => r.ok ? r.json() : Promise.reject('HTTP ' + r.status))
+      .then((d: any) => {
+        if (Array.isArray(d) && d.length > 0) { setQuestions(d); setStep('idle'); }
+        else { setStep('error'); setError('Bộ đề chưa có câu hỏi nào. Vui lòng thêm câu hỏi trước rồi dịch.'); }
+      })
+      .catch(() => { setStep('error'); setError('Không thể tải câu hỏi. Kiểm tra kết nối server (port 5030).'); });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const translate = async (useQuestions: Question[] = questions) => {
+    if (useQuestions.length === 0) { setError('Bộ đề chưa có câu hỏi.'); return; }
+    setStep('translating');
+    setError('');
+    setSaved(false);
+    try {
+      const res = await fetch('/api/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: quiz.title, questions: useQuestions }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Lỗi dịch thuật');
+      setData(json as TData);
+      setStep('done');
+    } catch (e: any) {
+      setError(e.message ?? 'Lỗi kết nối API');
+      setStep('error');
+    }
+  };
+
+  const retranslate = () => translate(questions);
+
+  const update = (field: string, val: string) =>
+    setData((p) => p ? { ...p, [activeLang]: { ...p[activeLang], [field]: val } } : p);
+
+  const updateQ = (qi: number, field: string, val: string) =>
+    setData((p) => p ? {
+      ...p,
+      [activeLang]: {
+        ...p[activeLang],
+        questions: p[activeLang].questions.map((q, i) => i === qi ? { ...q, [field]: val } : q),
+      },
+    } : p);
+
+  const handleSave = () => {
+    if (!data || !quiz.id) return;
+    saveTranslation(quiz.id, data);
+    setSaved(true);
+  };
+
+  const fieldStyle = {
+    border: '1.5px solid rgba(212,160,23,0.25)',
+    background: 'rgba(253,246,227,0.6)',
+    color: 'var(--text-dark)',
+  };
+  const focusGold = (e: React.FocusEvent<HTMLElement>) => { (e.currentTarget as HTMLElement).style.borderColor = '#1A9362'; };
+  const blurGold  = (e: React.FocusEvent<HTMLElement>) => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(212,160,23,0.25)'; };
+
+  return (
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        className="absolute inset-0 bg-black/65 backdrop-blur-sm" onClick={onClose} />
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.94, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.94, y: 20 }}
+        className="relative w-full max-w-3xl rounded-2xl z-10 flex flex-col"
+        style={{ background: '#FFFDF7', border: '1px solid rgba(212,160,23,0.3)', boxShadow: '0 32px 80px rgba(42,21,5,0.3)', maxHeight: '92vh' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="absolute top-0 left-8 right-8 h-px" style={{ background: 'linear-gradient(90deg,transparent,#1A9362,transparent)' }} />
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 flex-shrink-0"
+          style={{ borderBottom: '1px solid rgba(212,160,23,0.12)' }}>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: 'linear-gradient(135deg,#1A9362,#0ea5e9)', boxShadow: '0 0 12px rgba(26,147,98,0.3)' }}>
+              <Globe size={17} className="text-white" />
+            </div>
+            <div>
+              <h2 className="font-bold text-sm" style={{ fontFamily: "'Philosopher', serif", color: 'var(--text-dark)' }}>
+                Dịch bộ đề sang 2 ngôn ngữ
+              </h2>
+              <p className="text-[10px] mt-0.5 max-w-xs truncate" style={{ color: 'var(--text-medium)' }}>
+                {quiz.title}
+                {hasTranslation(quiz.id) && (
+                  <span className="ml-2 px-1.5 py-0.5 rounded-full text-[9px] font-semibold"
+                    style={{ background: 'rgba(26,147,98,0.12)', color: '#1A9362' }}>
+                    ✓ Đã có bản dịch
+                  </span>
+                )}
+              </p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-xl transition-colors" style={{ color: 'var(--text-medium)' }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(212,160,23,0.1)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}>
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto px-6 py-5" style={{ scrollbarWidth: 'thin' }}>
+
+          {/* Fetching questions */}
+          {step === 'fetching' && (
+            <div className="flex flex-col items-center justify-center py-16">
+              <Loader2 size={36} className="animate-spin mb-4" style={{ color: '#D4A017' }} />
+              <p className="text-sm" style={{ color: 'var(--text-medium)' }}>Đang tải câu hỏi từ server...</p>
+            </div>
+          )}
+
+          {/* Idle — ready to translate */}
+          {step === 'idle' && (
+            <div className="text-center py-10">
+              <div className="text-5xl mb-4">🌐</div>
+              <h3 className="font-bold text-base mb-2" style={{ color: 'var(--text-dark)' }}>
+                Sẵn sàng dịch với AI
+              </h3>
+              <p className="text-sm mb-1" style={{ color: 'var(--text-medium)' }}>
+                Bộ đề <strong>"{quiz.title}"</strong> có <strong>{questions.length} câu hỏi</strong>
+              </p>
+              <p className="text-xs mb-7" style={{ color: 'var(--text-light)' }}>
+                AI sẽ dịch toàn bộ câu hỏi, đáp án và giải thích sang <strong>简体中文</strong> và <strong>繁體中文</strong>
+              </p>
+              <button onClick={() => translate()}
+                className="inline-flex items-center gap-2.5 px-7 py-3 rounded-xl font-bold text-white transition-all"
+                style={{ background: 'linear-gradient(135deg,#1A9362,#0ea5e9)', boxShadow: '0 4px 16px rgba(26,147,98,0.35)' }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(26,147,98,0.45)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 4px 16px rgba(26,147,98,0.35)'; }}>
+                <Globe size={16} /> Dịch ngay với AI
+              </button>
+            </div>
+          )}
+
+          {/* Translating */}
+          {step === 'translating' && (
+            <div className="flex flex-col items-center justify-center py-16">
+              <div className="relative mb-5">
+                <Loader2 size={44} className="animate-spin" style={{ color: '#1A9362' }} />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Globe size={18} style={{ color: '#D4A017' }} />
+                </div>
+              </div>
+              <p className="font-bold mb-1.5" style={{ color: 'var(--text-dark)' }}>Đang dịch thuật...</p>
+              <p className="text-sm" style={{ color: 'var(--text-medium)' }}>
+                AI đang xử lý <strong>{questions.length}</strong> câu hỏi sang 2 ngôn ngữ
+              </p>
+              <p className="text-xs mt-2" style={{ color: 'var(--text-light)' }}>Thường mất 10–30 giây, vui lòng đợi</p>
+            </div>
+          )}
+
+          {/* Error */}
+          {step === 'error' && (
+            <div className="text-center py-10">
+              <div className="text-5xl mb-4">⚠️</div>
+              <p className="font-bold mb-2" style={{ color: 'var(--text-dark)' }}>Có lỗi xảy ra</p>
+              <p className="text-sm mb-6 max-w-md mx-auto px-4 py-3 rounded-xl"
+                style={{ color: '#DC2626', background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.15)' }}>
+                {error}
+              </p>
+              {questions.length > 0 && (
+                <button onClick={() => translate()}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-white"
+                  style={{ background: 'linear-gradient(135deg,#1A9362,#0ea5e9)' }}>
+                  <RefreshCw size={14} /> Thử lại
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Done — review & edit */}
+          {step === 'done' && data && (
+            <>
+              {/* Lang tabs + retranslate */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex gap-2">
+                  {(['zh-CN', 'zh-TW'] as LangKey[]).map((l) => (
+                    <button key={l} onClick={() => setActiveLang(l)}
+                      className="px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+                      style={activeLang === l
+                        ? { background: 'linear-gradient(135deg,#1A9362,#0ea5e9)', color: '#fff', boxShadow: '0 2px 8px rgba(26,147,98,0.3)' }
+                        : { background: 'rgba(26,147,98,0.08)', color: 'var(--text-medium)' }}>
+                      {LANG_LABELS[l]}
+                    </button>
+                  ))}
+                </div>
+                <button onClick={retranslate}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all"
+                  style={{ border: '1.5px solid rgba(26,147,98,0.3)', color: '#1A9362' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(26,147,98,0.06)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}>
+                  <RefreshCw size={12} /> Dịch lại
+                </button>
+              </div>
+
+              {/* Info */}
+              <div className="rounded-xl p-3 mb-5 flex items-start gap-2.5"
+                style={{ background: 'rgba(26,147,98,0.07)', border: '1px solid rgba(26,147,98,0.18)' }}>
+                <CheckCircle2 size={14} style={{ color: '#1A9362', flexShrink: 0, marginTop: 1 }} />
+                <p className="text-xs leading-relaxed" style={{ color: 'var(--text-medium)' }}>
+                  Dịch hoàn tất <strong>{data[activeLang]?.questions?.length ?? 0}</strong> câu hỏi.
+                  Văn bản gốc tiếng Việt được hiển thị màu nhạt phía trên mỗi ô — chỉnh sửa bản dịch bên dưới nếu cần.
+                </p>
+              </div>
+
+              {/* Title */}
+              <div className="mb-5 rounded-xl p-4" style={{ background: 'rgba(212,160,23,0.04)', border: '1px solid rgba(212,160,23,0.15)' }}>
+                <p className="text-[10px] font-bold mb-1" style={{ color: '#B8860B' }}>TÊN BỘ ĐỀ</p>
+                <p className="text-[10px] mb-1.5 italic" style={{ color: 'var(--text-light)' }}>🇻🇳 {quiz.title}</p>
+                <input value={data[activeLang]?.title ?? ''}
+                  onChange={(e) => update('title', e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl text-sm focus:outline-none"
+                  style={fieldStyle}
+                  onFocus={focusGold} onBlur={blurGold}
+                />
+              </div>
+
+              {/* Questions */}
+              <div className="space-y-4">
+                {(data[activeLang]?.questions ?? []).map((q, qi) => {
+                  const orig = questions[qi];
+                  return (
+                    <div key={qi} className="rounded-xl p-4 border"
+                      style={{ borderColor: 'rgba(212,160,23,0.2)', background: 'rgba(253,246,227,0.3)' }}>
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0"
+                          style={{ background: 'linear-gradient(135deg,#D4A017,#B8860B)' }}>{qi + 1}</span>
+                        <span className="text-xs font-semibold" style={{ color: 'var(--text-medium)' }}>Câu hỏi {qi + 1}</span>
+                      </div>
+
+                      {/* Question text */}
+                      <div className="mb-3">
+                        {orig && <p className="text-[10px] mb-1 italic px-1" style={{ color: 'var(--text-light)' }}>🇻🇳 {orig.question}</p>}
+                        <textarea rows={2} value={q.question ?? ''}
+                          onChange={(e) => updateQ(qi, 'question', e.target.value)}
+                          className="w-full px-3 py-2 rounded-xl text-sm focus:outline-none resize-none"
+                          style={fieldStyle} onFocus={focusGold} onBlur={blurGold} />
+                      </div>
+
+                      {/* Options */}
+                      <div className="grid grid-cols-2 gap-2 mb-3">
+                        {OPT_KEYS.map((opt, oi) => (
+                          <div key={opt}>
+                            {orig && <p className="text-[9px] mb-1 italic px-1" style={{ color: 'var(--text-light)' }}>🇻🇳 {orig[opt] as string}</p>}
+                            <div className="relative">
+                              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center"
+                                style={{ background: 'rgba(212,160,23,0.15)', color: '#B8860B' }}>
+                                {OPT_LABELS[oi]}
+                              </span>
+                              <input value={(q[opt] as string) ?? ''}
+                                onChange={(e) => updateQ(qi, opt as string, e.target.value)}
+                                className="w-full pl-8 pr-3 py-1.5 rounded-xl text-xs focus:outline-none"
+                                style={fieldStyle} onFocus={focusGold} onBlur={blurGold}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Explanation */}
+                      <div>
+                        {orig?.explanation && (
+                          <p className="text-[9px] mb-1 italic px-1" style={{ color: 'var(--text-light)' }}>
+                            🇻🇳 {orig.explanation}
+                          </p>
+                        )}
+                        <textarea rows={2} value={q.explanation ?? ''}
+                          onChange={(e) => updateQ(qi, 'explanation', e.target.value)}
+                          placeholder="Giải thích..."
+                          className="w-full px-3 py-2 rounded-xl text-xs focus:outline-none resize-none"
+                          style={fieldStyle} onFocus={focusGold} onBlur={blurGold} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex gap-3 px-6 py-4 flex-shrink-0" style={{ borderTop: '1px solid rgba(212,160,23,0.12)' }}>
+          <button onClick={onClose}
+            className="py-2.5 px-5 rounded-xl text-sm font-semibold transition-all"
+            style={{ border: '1.5px solid rgba(212,160,23,0.3)', color: 'var(--text-medium)' }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(212,160,23,0.06)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}>
+            Đóng
+          </button>
+
+          {step === 'done' && data && (
+            <button onClick={handleSave}
+              className="flex-1 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all"
+              style={saved
+                ? { background: 'rgba(26,147,98,0.12)', color: '#1A9362', border: '1.5px solid rgba(26,147,98,0.3)' }
+                : { background: 'linear-gradient(135deg,#1A9362,#0ea5e9)', color: '#fff', boxShadow: '0 2px 12px rgba(26,147,98,0.3)' }}>
+              {saved ? <><CheckCircle2 size={15} /> Đã lưu bản dịch!</> : <><Save size={15} /> Lưu bản dịch</>}
+            </button>
+          )}
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 // ─── Main Admin Page ──────────────────────────────────────────────────────────
 export default function AdminPage() {
   const { user, logout, token } = useApp();
@@ -587,6 +930,7 @@ export default function AdminPage() {
   const [showQuizModal, setShowQuizModal]   = useState(false);
   const [editingQuiz, setEditingQuiz]       = useState<any>(null);
   const [deletingQuiz, setDeletingQuiz]     = useState<any>(null);
+  const [translatingQuiz, setTranslatingQuiz] = useState<any>(null);
   const [quizSearch, setQuizSearch]         = useState('');
   const [quizLevelFilter, setQuizLevelFilter] = useState('');
   const [quizTopicFilter, setQuizTopicFilter] = useState<number | null>(null);
@@ -990,6 +1334,18 @@ export default function AdminPage() {
                               </td>
                               <td className="px-4 py-3">
                                 <div className="flex items-center gap-1">
+                                  <button onClick={() => setTranslatingQuiz(q)}
+                                    className="p-1.5 rounded-lg transition-all relative"
+                                    style={{ color: '#0ea5e9' }}
+                                    title="Dịch bộ đề sang zh-CN & zh-TW"
+                                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(14,165,233,0.1)'; }}
+                                    onMouseLeave={(e) => { e.currentTarget.style.background = ''; }}>
+                                    <Globe size={14} />
+                                    {hasTranslation(q.id) && (
+                                      <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full"
+                                        style={{ background: '#1A9362' }} />
+                                    )}
+                                  </button>
                                   <button onClick={() => { setEditingQuiz({ ...q, _openTab: 'questions' }); setShowQuizModal(true); }}
                                     className="p-1.5 rounded-lg transition-all" style={{ color: '#1A9362' }}
                                     onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(26,147,98,0.1)'; }}
@@ -1292,6 +1648,12 @@ export default function AdminPage() {
             name={deletingQuiz.title}
             onClose={() => setDeletingQuiz(null)}
             onConfirm={() => handleDeleteQuiz(deletingQuiz.id)}
+          />
+        )}
+        {translatingQuiz && (
+          <TranslationModal
+            quiz={translatingQuiz}
+            onClose={() => setTranslatingQuiz(null)}
           />
         )}
       </AnimatePresence>
