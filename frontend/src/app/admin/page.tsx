@@ -18,7 +18,7 @@ import { mockTopics, allSubTopics } from '@/data/mockData';
 import { LEVELS } from '@/constants';
 import { cn } from '@/lib/utils';
 import type { Question } from '@/types';
-import { saveTranslation, loadTranslation, hasTranslation, type TData, type TQuestion } from '@/i18n/translationStore';
+import { saveTranslation, loadTranslation, hasTranslation, TRANS_EVENT, type TData, type TQuestion } from '@/i18n/translationStore';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5030/api';
 
@@ -263,6 +263,15 @@ function QuizModal({ quiz, onClose, onSave }: { quiz?: any; onClose: () => void;
   const [editingIdx, setEditingIdx] = useState<number | null>(null);
   const [addingNew, setAddingNew] = useState(false);
 
+  // Language switcher for viewing translations
+  const [viewLang, setViewLang] = useState<'vi' | 'zh-CN' | 'zh-TW'>('vi');
+  const [savedTrans, setSavedTrans] = useState<TData | null>(() => loadTranslation(quiz?.id));
+  useEffect(() => {
+    const refresh = () => setSavedTrans(loadTranslation(quiz?.id));
+    window.addEventListener(TRANS_EVENT, refresh);
+    return () => window.removeEventListener(TRANS_EVENT, refresh);
+  }, [quiz?.id]);
+
   const handleSaveQuestion = (idx: number, updated: Question) => {
     setQuestions(questions.map((q, i) => i === idx ? { ...updated, id: q.id } : q));
     setEditingIdx(null);
@@ -427,13 +436,42 @@ function QuizModal({ quiz, onClose, onSave }: { quiz?: any; onClose: () => void;
 
             {tab === 'questions' && (
               <motion.div key="questions" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
+
+                {/* ── Language switcher ── */}
+                <div className="flex gap-1 mb-4 p-1 rounded-xl"
+                  style={{ background: 'rgba(212,160,23,0.06)', border: '1px solid rgba(212,160,23,0.12)' }}>
+                  {([
+                    { lang: 'vi',    flag: '🇻🇳', label: 'Tiếng Việt', grad: 'linear-gradient(135deg,#D4A017,#B8860B)' },
+                    { lang: 'zh-CN', flag: '🇨🇳', label: '简体中文',   grad: 'linear-gradient(135deg,#4285F4,#0ea5e9)' },
+                    { lang: 'zh-TW', flag: '🇹🇼', label: '繁體中文',   grad: 'linear-gradient(135deg,#4285F4,#0ea5e9)' },
+                  ] as const).map(({ lang, flag, label, grad }) => {
+                    const hasTrans = lang !== 'vi' && !!savedTrans?.[lang as LangKey];
+                    return (
+                      <button key={lang} onClick={() => setViewLang(lang)}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-semibold transition-all relative"
+                        style={viewLang === lang
+                          ? { background: grad, color: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }
+                          : { color: 'var(--text-medium)' }}>
+                        {flag} {label}
+                        {hasTrans && (
+                          <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full border border-white"
+                            style={{ background: '#1A9362' }} />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* ── Loading ── */}
                 {questionsLoading && (
                   <div className="text-center py-10" style={{ color: 'var(--text-medium)' }}>
                     <div className="text-3xl mb-3 animate-pulse">📖</div>
                     <p className="text-sm">{m.loadingQuestions}</p>
                   </div>
                 )}
-                {!questionsLoading && (
+
+                {/* ── TIẾNG VIỆT tab — editable ── */}
+                {!questionsLoading && viewLang === 'vi' && (
                   <>
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
@@ -488,7 +526,6 @@ function QuizModal({ quiz, onClose, onSave }: { quiz?: any; onClose: () => void;
                           </motion.div>
                         )
                       ))}
-
                       {addingNew && (
                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                           <QuestionForm
@@ -502,6 +539,140 @@ function QuizModal({ quiz, onClose, onSave }: { quiz?: any; onClose: () => void;
                     </div>
                   </>
                 )}
+
+                {/* ── CHINESE tabs — read-only view ── */}
+                {!questionsLoading && viewLang !== 'vi' && (() => {
+                  const langData = savedTrans?.[viewLang as LangKey];
+                  const optKeys = ['option_a','option_b','option_c','option_d'] as const;
+                  const optLabels = ['A','B','C','D'];
+
+                  if (!langData) {
+                    return (
+                      <div className="text-center py-10 rounded-xl"
+                        style={{ border: '2px dashed rgba(66,133,244,0.2)', background: 'rgba(66,133,244,0.03)' }}>
+                        <div className="text-4xl mb-3">🌐</div>
+                        <p className="font-semibold text-sm mb-1" style={{ color: 'var(--text-dark)' }}>
+                          Chưa có bản dịch {viewLang === 'zh-CN' ? '简体中文' : '繁體中文'}
+                        </p>
+                        <p className="text-xs mb-4" style={{ color: 'var(--text-medium)' }}>
+                          Nhấn nút <strong>🌐</strong> trong danh sách bộ đề để dịch bộ đề này sang 2 ngôn ngữ
+                        </p>
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
+                          style={{ background: 'rgba(66,133,244,0.1)', color: '#4285F4', border: '1px solid rgba(66,133,244,0.2)' }}>
+                          <Globe size={12} /> Đóng modal → chọn bộ đề → nhấn 🌐
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <>
+                      {/* Header info */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <Globe size={14} style={{ color: '#4285F4' }} />
+                          <span className="text-sm font-semibold" style={{ color: 'var(--text-dark)' }}>
+                            {langData.questions.length} câu hỏi
+                          </span>
+                          <span className="text-xs px-2 py-0.5 rounded-full"
+                            style={{ background: 'rgba(66,133,244,0.1)', color: '#4285F4', border: '1px solid rgba(66,133,244,0.15)' }}>
+                            {viewLang === 'zh-CN' ? '简体中文' : '繁體中文'}
+                          </span>
+                        </div>
+                        <span className="text-[10px] px-2 py-1 rounded-lg"
+                          style={{ background: 'rgba(212,160,23,0.08)', color: 'var(--text-light)' }}>
+                          Chỉ xem · Chỉnh sửa qua nút 🌐
+                        </span>
+                      </div>
+
+                      {/* Translated title */}
+                      <div className="rounded-xl p-3 mb-3"
+                        style={{ background: 'rgba(66,133,244,0.05)', border: '1px solid rgba(66,133,244,0.15)' }}>
+                        <p className="text-[9px] font-bold mb-0.5" style={{ color: '#4285F4' }}>TÊN BỘ ĐỀ</p>
+                        <p className="text-[10px] italic mb-1" style={{ color: 'var(--text-light)' }}>🇻🇳 {quiz?.title}</p>
+                        <p className="text-sm font-semibold" style={{ color: 'var(--text-dark)' }}>{langData.title}</p>
+                      </div>
+
+                      {/* Translated questions */}
+                      <div className="space-y-3">
+                        {langData.questions.map((tq, qi) => {
+                          const orig = questions[qi];
+                          const corr = orig?.correct_answer ?? -1;
+                          return (
+                            <div key={qi} className="rounded-xl p-3.5 border"
+                              style={{ borderColor: 'rgba(66,133,244,0.18)', background: 'rgba(66,133,244,0.03)' }}>
+                              {/* Number + question */}
+                              <div className="flex items-start gap-2.5 mb-3">
+                                <span className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0 mt-0.5"
+                                  style={{ background: 'linear-gradient(135deg,#4285F4,#0ea5e9)' }}>{qi + 1}</span>
+                                <div className="flex-1 min-w-0">
+                                  {orig && (
+                                    <p className="text-[9px] italic mb-1 leading-relaxed" style={{ color: 'var(--text-light)' }}>
+                                      🇻🇳 {orig.question}
+                                    </p>
+                                  )}
+                                  <p className="text-xs font-semibold leading-snug" style={{ color: 'var(--text-dark)' }}>
+                                    {tq.question}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Options */}
+                              <div className="grid grid-cols-2 gap-1.5 mb-2">
+                                {optKeys.map((opt, oi) => {
+                                  const isCorrect = corr === oi;
+                                  return (
+                                    <div key={opt} className="flex items-start gap-1.5 p-2 rounded-lg"
+                                      style={{
+                                        background: isCorrect ? 'rgba(26,147,98,0.1)' : 'rgba(212,160,23,0.05)',
+                                        border: `1px solid ${isCorrect ? 'rgba(26,147,98,0.3)' : 'rgba(212,160,23,0.15)'}`,
+                                      }}>
+                                      <span className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0 mt-0.5"
+                                        style={{
+                                          background: isCorrect ? '#1A9362' : 'rgba(212,160,23,0.15)',
+                                          color: isCorrect ? '#fff' : '#B8860B',
+                                        }}>
+                                        {optLabels[oi]}
+                                      </span>
+                                      <div className="flex-1 min-w-0">
+                                        {orig && (
+                                          <p className="text-[8px] italic leading-tight mb-0.5" style={{ color: 'var(--text-light)' }}>
+                                            {orig[opt]}
+                                          </p>
+                                        )}
+                                        <p className={cn('text-[10px] leading-tight', isCorrect ? 'font-semibold' : '')}
+                                          style={{ color: isCorrect ? '#1A9362' : 'var(--text-dark)' }}>
+                                          {tq[opt]}
+                                        </p>
+                                      </div>
+                                      {isCorrect && <CheckCircle2 size={11} style={{ color: '#1A9362', flexShrink: 0, marginTop: 2 }} />}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+
+                              {/* Explanation */}
+                              {tq.explanation && (
+                                <div className="rounded-lg p-2 mt-1"
+                                  style={{ background: 'rgba(66,133,244,0.07)', border: '1px solid rgba(66,133,244,0.15)' }}>
+                                  {orig?.explanation && (
+                                    <p className="text-[8px] italic mb-0.5" style={{ color: 'var(--text-light)' }}>
+                                      🇻🇳 {orig.explanation}
+                                    </p>
+                                  )}
+                                  <p className="text-[10px] leading-relaxed" style={{ color: 'var(--text-medium)' }}>
+                                    💡 {tq.explanation}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </>
+                  );
+                })()}
+
               </motion.div>
             )}
           </AnimatePresence>
