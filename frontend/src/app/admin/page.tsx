@@ -898,7 +898,7 @@ function TranslationModal({ quiz, onClose }: { quiz: any; onClose: () => void })
               </p>
               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold mb-7"
                 style={{ background: 'rgba(66,133,244,0.08)', border: '1px solid rgba(66,133,244,0.2)', color: '#4285F4' }}>
-                🔍 Sử dụng Google Translate — Miễn phí, không cần API key
+                🔍 Sử dụng MyMemory API — Miễn phí, không cần API key
               </div>
               <button onClick={() => translate()}
                 className="inline-flex items-center gap-2.5 px-7 py-3 rounded-xl font-bold text-white transition-all"
@@ -985,7 +985,7 @@ function TranslationModal({ quiz, onClose }: { quiz: any; onClose: () => void })
                       style={engine === 'claude'
                         ? { background: 'rgba(139,38,53,0.1)', color: '#8B2635' }
                         : { background: 'rgba(66,133,244,0.1)', color: '#4285F4' }}>
-                      {engine === 'claude' ? '🤖 Claude AI' : '🔍 Google Translate (miễn phí)'}
+                      {engine === 'claude' ? '🤖 Claude AI' : '🔍 MyMemory (miễn phí)'}
                     </span>
                   )}
                 </div>
