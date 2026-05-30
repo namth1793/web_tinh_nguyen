@@ -53,13 +53,13 @@ router.get('/:id/questions', (req, res) => {
 // Create quiz
 router.post('/', adminMiddleware, (req, res) => {
   const db = getDb();
-  const { title, description, topic_id, level, time_limit } = req.body;
+  const { title, description, topic_id, level, time_limit, quiz_type } = req.body;
   if (!title) return res.status(400).json({ error: 'Tên bài thi là bắt buộc' });
 
   const result = db.prepare(`
-    INSERT INTO quizzes (title, description, topic_id, level, question_count, time_limit, is_active)
-    VALUES (?, ?, ?, ?, 0, ?, 1)
-  `).run(title, description || null, topic_id || null, level || 'Cơ bản', time_limit || 15);
+    INSERT INTO quizzes (title, description, topic_id, level, quiz_type, question_count, time_limit, is_active)
+    VALUES (?, ?, ?, ?, ?, 0, ?, 1)
+  `).run(title, description || null, topic_id || null, level || 'Cơ bản', quiz_type || 'trac_nghiem', time_limit || 15);
 
   const newQuiz = db.prepare(`
     SELECT q.*, t.name as topic_name, t.icon as topic_icon, t.color as topic_color,
@@ -74,16 +74,16 @@ router.post('/', adminMiddleware, (req, res) => {
 // Update quiz metadata
 router.put('/:id', adminMiddleware, (req, res) => {
   const db = getDb();
-  const { title, description, topic_id, level, time_limit } = req.body;
+  const { title, description, topic_id, level, time_limit, quiz_type } = req.body;
   if (!title) return res.status(400).json({ error: 'Tên bài thi là bắt buộc' });
 
   const existing = db.prepare('SELECT id FROM quizzes WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'Không tìm thấy bài thi' });
 
   db.prepare(`
-    UPDATE quizzes SET title=?, description=?, topic_id=?, level=?, time_limit=?
+    UPDATE quizzes SET title=?, description=?, topic_id=?, level=?, quiz_type=?, time_limit=?
     WHERE id=?
-  `).run(title, description || null, topic_id || null, level || 'Cơ bản', time_limit || 15, req.params.id);
+  `).run(title, description || null, topic_id || null, level || 'Cơ bản', quiz_type || 'trac_nghiem', time_limit || 15, req.params.id);
 
   const updated = db.prepare(`
     SELECT q.*, t.name as topic_name, t.icon as topic_icon, t.color as topic_color,
@@ -129,11 +129,11 @@ router.put('/:id/questions', adminMiddleware, (req, res) => {
       insert.run(
         quizId,
         q.question,
-        q.option_a,
-        q.option_b,
-        q.option_c,
-        q.option_d,
-        q.correct_answer,
+        q.option_a || '',
+        q.option_b || '',
+        q.option_c || '',
+        q.option_d || '',
+        q.correct_answer ?? 0,
         q.explanation || null,
       );
     }

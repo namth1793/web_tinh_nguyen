@@ -56,6 +56,7 @@ function initDatabase() {
       description TEXT,
       topic_id INTEGER REFERENCES topics(id),
       level TEXT CHECK(level IN ('Cơ bản','Trung cấp','Nâng cao','Chuyên sâu')),
+      quiz_type TEXT DEFAULT 'trac_nghiem',
       question_count INTEGER DEFAULT 10,
       time_limit INTEGER DEFAULT 15,
       is_active INTEGER DEFAULT 1,
@@ -66,11 +67,11 @@ function initDatabase() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       quiz_id INTEGER REFERENCES quizzes(id),
       question TEXT NOT NULL,
-      option_a TEXT NOT NULL,
-      option_b TEXT NOT NULL,
-      option_c TEXT NOT NULL,
-      option_d TEXT NOT NULL,
-      correct_answer INTEGER NOT NULL,
+      option_a TEXT DEFAULT '',
+      option_b TEXT DEFAULT '',
+      option_c TEXT DEFAULT '',
+      option_d TEXT DEFAULT '',
+      correct_answer INTEGER DEFAULT 0,
       explanation TEXT,
       topic_id INTEGER REFERENCES topics(id),
       level TEXT
@@ -106,6 +107,9 @@ function initDatabase() {
       UNIQUE(user_id, badge_id)
     );
   `);
+
+  // Migrations for existing databases
+  try { db.exec("ALTER TABLE quizzes ADD COLUMN quiz_type TEXT DEFAULT 'trac_nghiem'"); } catch (_) {}
 
   seedData(db);
   console.log('✅ Database initialized');

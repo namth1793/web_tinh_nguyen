@@ -57,6 +57,8 @@ export interface Level {
   gradient: string;
 }
 
+export type QuizType = 'trac_nghiem' | 'tu_luan';
+
 export interface Quiz {
   id: number;
   title: string;
@@ -66,6 +68,7 @@ export interface Quiz {
   topic_icon?: string;
   topic_color?: string;
   level: 'Cơ bản' | 'Trung cấp' | 'Nâng cao' | 'Chuyên sâu';
+  quiz_type?: QuizType;
   question_count: number;
   time_limit: number;
   questions?: Question[];

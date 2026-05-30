@@ -35,9 +35,17 @@ export default function QuizCard({ quiz, index = 0, getLevelName }: QuizCardProp
         >
           {quiz.topic_icon || '📚'}
         </div>
-        <span className={cn('badge-level ml-auto', levelStyle.bg, levelStyle.text)}>
-          {levelDisplay}
-        </span>
+        <div className="flex flex-col items-end gap-1 ml-auto">
+          <span className={cn('badge-level', levelStyle.bg, levelStyle.text)}>
+            {levelDisplay}
+          </span>
+          <span className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold"
+            style={quiz.quiz_type === 'tu_luan'
+              ? { background: 'rgba(139,92,246,0.12)', color: '#7c3aed' }
+              : { background: 'rgba(16,185,129,0.12)', color: '#059669' }}>
+            {quiz.quiz_type === 'tu_luan' ? '✍️ Tự luận' : '📝 Trắc nghiệm'}
+          </span>
+        </div>
       </div>
 
       {/* Title */}

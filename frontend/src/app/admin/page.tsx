@@ -59,20 +59,24 @@ type Tab = 'dashboard' | 'quizzes' | 'results' | 'users';
 
 // ─── Question Form Component ──────────────────────────────────────────────────
 function QuestionForm({
-  question, index, onSave, onCancel,
+  question, index, onSave, onCancel, quizType = 'trac_nghiem',
 }: {
   question: Partial<Question>;
   index: number;
   onSave: (q: Question) => void;
   onCancel: () => void;
+  quizType?: 'trac_nghiem' | 'tu_luan';
 }) {
   const { t } = useLang();
   const qf = t.admin.questionForm;
+  const isEssay = quizType === 'tu_luan';
   const [q, setQ] = useState<Partial<Question>>({ correct_answer: 0, ...question });
   const opts: Array<keyof Question> = ['option_a', 'option_b', 'option_c', 'option_d'];
   const labels = ['A', 'B', 'C', 'D'];
 
-  const isValid = q.question?.trim() && q.option_a?.trim() && q.option_b?.trim() && q.option_c?.trim() && q.option_d?.trim();
+  const isValid = isEssay
+    ? q.question?.trim()
+    : q.question?.trim() && q.option_a?.trim() && q.option_b?.trim() && q.option_c?.trim() && q.option_d?.trim();
 
   return (
     <div className="rounded-xl p-4 border-2 space-y-3" style={{ borderColor: '#D4A01755', background: 'rgba(212,160,23,0.04)' }}>
@@ -93,56 +97,82 @@ function QuestionForm({
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        {opts.map((opt, i) => (
-          <div key={opt} className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
-              style={{ background: q.correct_answer === i ? '#D4A017' : 'rgba(212,160,23,0.15)', color: q.correct_answer === i ? '#fff' : '#B8860B', fontSize: 9 }}>
-              {labels[i]}
-            </span>
-            <input
-              value={(q[opt] as string) ?? ''}
-              onChange={(e) => setQ({ ...q, [opt]: e.target.value })}
-              placeholder={`${qf.answerPlaceholder} ${labels[i]}...`}
-              className="w-full pl-8 pr-3 py-2 rounded-xl text-xs focus:outline-none"
-              style={{
-                border: q.correct_answer === i ? '1.5px solid #D4A017' : '1.5px solid rgba(212,160,23,0.2)',
-                background: q.correct_answer === i ? 'rgba(212,160,23,0.1)' : 'rgba(253,246,227,0.5)',
-                color: 'var(--text-dark)',
-              }}
+      {/* ── Trắc nghiệm: 4 options ── */}
+      {!isEssay && (
+        <>
+          <div className="grid grid-cols-2 gap-2">
+            {opts.map((opt, i) => (
+              <div key={opt} className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{ background: q.correct_answer === i ? '#D4A017' : 'rgba(212,160,23,0.15)', color: q.correct_answer === i ? '#fff' : '#B8860B', fontSize: 9 }}>
+                  {labels[i]}
+                </span>
+                <input
+                  value={(q[opt] as string) ?? ''}
+                  onChange={(e) => setQ({ ...q, [opt]: e.target.value })}
+                  placeholder={`${qf.answerPlaceholder} ${labels[i]}...`}
+                  className="w-full pl-8 pr-3 py-2 rounded-xl text-xs focus:outline-none"
+                  style={{
+                    border: q.correct_answer === i ? '1.5px solid #D4A017' : '1.5px solid rgba(212,160,23,0.2)',
+                    background: q.correct_answer === i ? 'rgba(212,160,23,0.1)' : 'rgba(253,246,227,0.5)',
+                    color: 'var(--text-dark)',
+                  }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = '#D4A017'; }}
+                  onBlur={(e) => { if (q.correct_answer !== i) e.currentTarget.style.borderColor = 'rgba(212,160,23,0.2)'; }}
+                />
+              </div>
+            ))}
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--text-dark)' }}>{qf.correctLabel}</label>
+            <div className="flex gap-2">
+              {labels.map((lbl, i) => (
+                <button key={i} type="button" onClick={() => setQ({ ...q, correct_answer: i })}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border-2 transition-all"
+                  style={q.correct_answer === i
+                    ? { background: '#D4A017', borderColor: '#D4A017', color: '#fff' }
+                    : { background: 'transparent', borderColor: 'rgba(212,160,23,0.3)', color: 'var(--text-medium)' }}>
+                  {q.correct_answer === i && <CheckCircle2 size={11} />}
+                  {lbl}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-dark)' }}>{qf.explanationLabel}</label>
+            <textarea rows={2} value={q.explanation ?? ''} onChange={(e) => setQ({ ...q, explanation: e.target.value })}
+              placeholder={qf.explanationPlaceholder}
+              className="w-full px-3 py-2 rounded-xl text-sm focus:outline-none resize-none"
+              style={{ border: '1.5px solid rgba(212,160,23,0.2)', background: 'rgba(253,246,227,0.4)', color: 'var(--text-dark)' }}
               onFocus={(e) => { e.currentTarget.style.borderColor = '#D4A017'; }}
-              onBlur={(e) => { if (q.correct_answer !== i) e.currentTarget.style.borderColor = 'rgba(212,160,23,0.2)'; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(212,160,23,0.2)'; }}
             />
           </div>
-        ))}
-      </div>
+        </>
+      )}
 
-      <div>
-        <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--text-dark)' }}>{qf.correctLabel}</label>
-        <div className="flex gap-2">
-          {labels.map((lbl, i) => (
-            <button key={i} type="button" onClick={() => setQ({ ...q, correct_answer: i })}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border-2 transition-all"
-              style={q.correct_answer === i
-                ? { background: '#D4A017', borderColor: '#D4A017', color: '#fff' }
-                : { background: 'transparent', borderColor: 'rgba(212,160,23,0.3)', color: 'var(--text-medium)' }}>
-              {q.correct_answer === i && <CheckCircle2 size={11} />}
-              {lbl}
-            </button>
-          ))}
+      {/* ── Tự luận: model answer only ── */}
+      {isEssay && (
+        <div>
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <label className="text-xs font-semibold" style={{ color: 'var(--text-dark)' }}>Đáp án mẫu / Gợi ý trả lời</label>
+            <span className="text-[9px] px-1.5 py-0.5 rounded-full font-semibold"
+              style={{ background: 'rgba(139,92,246,0.1)', color: '#7c3aed' }}>Tự luận</span>
+          </div>
+          <textarea rows={4} value={q.explanation ?? ''} onChange={(e) => setQ({ ...q, explanation: e.target.value })}
+            placeholder="Nhập gợi ý trả lời hoặc đáp án mẫu cho học viên tham khảo..."
+            className="w-full px-3 py-2 rounded-xl text-sm focus:outline-none resize-none"
+            style={{ border: '1.5px solid rgba(139,92,246,0.3)', background: 'rgba(139,92,246,0.04)', color: 'var(--text-dark)' }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = '#7c3aed'; }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(139,92,246,0.3)'; }}
+          />
+          <p className="text-[10px] mt-1" style={{ color: 'var(--text-light)' }}>
+            💡 Học viên sẽ tự so sánh câu trả lời của mình với đáp án mẫu này sau khi hoàn thành
+          </p>
         </div>
-      </div>
-
-      <div>
-        <label className="block text-xs font-semibold mb-1" style={{ color: 'var(--text-dark)' }}>{qf.explanationLabel}</label>
-        <textarea rows={2} value={q.explanation ?? ''} onChange={(e) => setQ({ ...q, explanation: e.target.value })}
-          placeholder={qf.explanationPlaceholder}
-          className="w-full px-3 py-2 rounded-xl text-sm focus:outline-none resize-none"
-          style={{ border: '1.5px solid rgba(212,160,23,0.2)', background: 'rgba(253,246,227,0.4)', color: 'var(--text-dark)' }}
-          onFocus={(e) => { e.currentTarget.style.borderColor = '#D4A017'; }}
-          onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(212,160,23,0.2)'; }}
-        />
-      </div>
+      )}
 
       <div className="flex gap-2 pt-1">
         <button onClick={onCancel} className="flex-1 py-2 rounded-xl text-xs font-semibold transition-all"
@@ -151,7 +181,14 @@ function QuestionForm({
           onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}>
           {qf.cancel}
         </button>
-        <button onClick={() => { if (isValid) onSave(q as Question); }}
+        <button
+          onClick={() => {
+            if (!isValid) return;
+            const saved: Question = isEssay
+              ? { ...q as Question, option_a: '', option_b: '', option_c: '', option_d: '', correct_answer: 0 }
+              : q as Question;
+            onSave(saved);
+          }}
           disabled={!isValid}
           className="flex-1 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all"
           style={isValid
@@ -165,7 +202,8 @@ function QuestionForm({
 }
 
 // ─── Question Card (collapsed) ────────────────────────────────────────────────
-function QuestionCard({ q, index, onEdit, onDelete }: { q: Question; index: number; onEdit: () => void; onDelete: () => void }) {
+function QuestionCard({ q, index, onEdit, onDelete, quizType = 'trac_nghiem' }: { q: Question; index: number; onEdit: () => void; onDelete: () => void; quizType?: 'trac_nghiem' | 'tu_luan' }) {
+  const isEssay = quizType === 'tu_luan' || !q.option_a;
   const labels = ['A', 'B', 'C', 'D'];
   const opts = [q.option_a, q.option_b, q.option_c, q.option_d];
 
@@ -179,20 +217,35 @@ function QuestionCard({ q, index, onEdit, onDelete }: { q: Question; index: numb
         <span className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0 mt-0.5"
           style={{ background: 'linear-gradient(135deg,#D4A017,#B8860B)' }}>{index + 1}</span>
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold mb-2 leading-snug" style={{ color: 'var(--text-dark)' }}>{q.question}</p>
-          <div className="grid grid-cols-2 gap-1">
-            {opts.map((opt, i) => (
-              <div key={i} className="flex items-center gap-1.5">
-                <span className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0"
-                  style={{ background: q.correct_answer === i ? '#D4A017' : 'rgba(212,160,23,0.12)', color: q.correct_answer === i ? '#fff' : '#B8860B' }}>
-                  {labels[i]}
-                </span>
-                <span className={cn('text-[10px] truncate', q.correct_answer === i ? 'font-semibold' : '')}
-                  style={{ color: q.correct_answer === i ? '#B8860B' : 'var(--text-medium)' }}>{opt}</span>
-                {q.correct_answer === i && <CheckCircle2 size={10} style={{ color: '#1A9362', flexShrink: 0 }} />}
-              </div>
-            ))}
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <p className="text-xs font-semibold leading-snug flex-1" style={{ color: 'var(--text-dark)' }}>{q.question}</p>
+            {isEssay && (
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full font-semibold flex-shrink-0"
+                style={{ background: 'rgba(139,92,246,0.1)', color: '#7c3aed' }}>✍️ Tự luận</span>
+            )}
           </div>
+          {!isEssay ? (
+            <div className="grid grid-cols-2 gap-1">
+              {opts.map((opt, i) => (
+                <div key={i} className="flex items-center gap-1.5">
+                  <span className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0"
+                    style={{ background: q.correct_answer === i ? '#D4A017' : 'rgba(212,160,23,0.12)', color: q.correct_answer === i ? '#fff' : '#B8860B' }}>
+                    {labels[i]}
+                  </span>
+                  <span className={cn('text-[10px] truncate', q.correct_answer === i ? 'font-semibold' : '')}
+                    style={{ color: q.correct_answer === i ? '#B8860B' : 'var(--text-medium)' }}>{opt}</span>
+                  {q.correct_answer === i && <CheckCircle2 size={10} style={{ color: '#1A9362', flexShrink: 0 }} />}
+                </div>
+              ))}
+            </div>
+          ) : (
+            q.explanation && (
+              <p className="text-[10px] leading-relaxed line-clamp-2"
+                style={{ color: 'var(--text-medium)', fontStyle: 'italic' }}>
+                💡 {q.explanation}
+              </p>
+            )
+          )}
         </div>
         <div className="flex gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
           <button onClick={onEdit} className="p-1.5 rounded-lg transition-all"
@@ -237,6 +290,7 @@ function QuizModal({ quiz, onClose, onSave }: { quiz?: any; onClose: () => void;
     description: quiz?.description ?? '',
     topic_id: initSubTopic(),
     level: quiz?.level ?? 'Cơ bản',
+    quiz_type: (quiz?.quiz_type ?? 'trac_nghiem') as 'trac_nghiem' | 'tu_luan',
     time_limit: quiz?.time_limit ?? 30,
   });
 
@@ -295,6 +349,7 @@ function QuizModal({ quiz, onClose, onSave }: { quiz?: any; onClose: () => void;
       topic_color: subTopic?.color ?? '#D4A017',
       question_count: questions.length > 0 ? questions.length : form.time_limit,
       questions,
+      quiz_type: form.quiz_type,
     });
     onClose();
   };
@@ -400,6 +455,30 @@ function QuizModal({ quiz, onClose, onSave }: { quiz?: any; onClose: () => void;
                         <option key={s.id} value={s.id}>{s.icon} {s.name.split('(')[0].trim()}</option>
                       ))}
                     </select>
+                  </div>
+                </div>
+
+                {/* Quiz type selector */}
+                <div>
+                  <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--text-dark)' }}>Loại đề thi</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {([
+                      { value: 'trac_nghiem', icon: '📝', label: 'Trắc nghiệm', desc: '4 đáp án A/B/C/D' },
+                      { value: 'tu_luan',     icon: '✍️', label: 'Tự luận',     desc: 'Câu hỏi mở' },
+                    ] as const).map(({ value, icon, label, desc }) => (
+                      <button key={value} type="button"
+                        onClick={() => setForm({ ...form, quiz_type: value })}
+                        className="p-2.5 rounded-xl border-2 text-left transition-all"
+                        style={form.quiz_type === value
+                          ? { borderColor: '#D4A017', background: 'rgba(212,160,23,0.1)' }
+                          : { borderColor: 'rgba(212,160,23,0.2)', background: 'rgba(253,246,227,0.4)' }}>
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <span>{icon}</span>
+                          <span className="text-xs font-bold" style={{ color: form.quiz_type === value ? '#B8860B' : 'var(--text-dark)' }}>{label}</span>
+                        </div>
+                        <p className="text-[10px]" style={{ color: 'var(--text-light)' }}>{desc}</p>
+                      </button>
+                    ))}
                   </div>
                 </div>
 
@@ -513,13 +592,13 @@ function QuizModal({ quiz, onClose, onSave }: { quiz?: any; onClose: () => void;
                     <div className="space-y-2.5">
                       {questions.map((q, i) => (
                         editingIdx === i ? (
-                          <QuestionForm key={i} question={q} index={i}
+                          <QuestionForm key={i} question={q} index={i} quizType={form.quiz_type}
                             onSave={(updated) => handleSaveQuestion(i, updated)}
                             onCancel={() => setEditingIdx(null)}
                           />
                         ) : (
                           <motion.div key={i} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
-                            <QuestionCard q={q} index={i}
+                            <QuestionCard q={q} index={i} quizType={form.quiz_type}
                               onEdit={() => { setEditingIdx(i); setAddingNew(false); }}
                               onDelete={() => handleDeleteQuestion(i)}
                             />
@@ -531,6 +610,7 @@ function QuizModal({ quiz, onClose, onSave }: { quiz?: any; onClose: () => void;
                           <QuestionForm
                             question={{ correct_answer: 0 }}
                             index={questions.length}
+                            quizType={form.quiz_type}
                             onSave={handleAddQuestion}
                             onCancel={() => setAddingNew(false)}
                           />
@@ -1178,14 +1258,14 @@ export default function AdminPage() {
       if (editingQuiz) {
         const res = await fetch(`${API_BASE}/quizzes/${editingQuiz.id}`, {
           method: 'PUT', headers: authHeaders,
-          body: JSON.stringify({ title: data.title, description: data.description, topic_id: data.topic_id, level: data.level, time_limit: data.time_limit }),
+          body: JSON.stringify({ title: data.title, description: data.description, topic_id: data.topic_id, level: data.level, time_limit: data.time_limit, quiz_type: data.quiz_type }),
         });
         savedQuiz = await res.json();
         if (!res.ok) throw new Error(savedQuiz.error);
       } else {
         const res = await fetch(`${API_BASE}/quizzes`, {
           method: 'POST', headers: authHeaders,
-          body: JSON.stringify({ title: data.title, description: data.description, topic_id: data.topic_id, level: data.level, time_limit: data.time_limit }),
+          body: JSON.stringify({ title: data.title, description: data.description, topic_id: data.topic_id, level: data.level, time_limit: data.time_limit, quiz_type: data.quiz_type }),
         });
         savedQuiz = await res.json();
         if (!res.ok) throw new Error(savedQuiz.error);
