@@ -8,7 +8,7 @@ import {
   X, CheckCircle2, XCircle, Download, Clock, Star, BarChart3, Shield,
   ArrowUpRight, Bell, Moon, Sun, Save,
   ListOrdered, AlignLeft, Tag, HelpCircle,
-  Globe, Loader2, RefreshCw,
+  Globe, Loader2, RefreshCw, Home, Menu,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
@@ -1307,30 +1307,95 @@ export default function AdminPage() {
       <div className="flex-1 lg:ml-56 flex flex-col min-h-screen">
 
         {/* Top bar */}
-        <header className="sticky top-0 z-30 h-14 flex items-center px-6 gap-4"
+        <header className="sticky top-0 z-30 h-14 flex items-center px-4 gap-3"
           style={{ background: 'rgba(253,246,227,0.93)', borderBottom: '1px solid rgba(212,160,23,0.2)', boxShadow: '0 2px 12px rgba(42,21,5,0.05)' }}>
-          <div className="flex-1">
+
+          {/* Mobile: shield icon + ADMIN label */}
+          <div className="flex items-center gap-2 lg:hidden">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+              style={{ background: 'linear-gradient(135deg,#D4A017,#B8860B)' }}>
+              <Shield size={13} className="text-white" />
+            </div>
+            <span className="font-bold text-xs tracking-wider" style={{ fontFamily: 'Cinzel, serif', color: '#B8860B' }}>
+              ADMIN
+            </span>
+          </div>
+
+          {/* Desktop: current tab title */}
+          <div className="hidden lg:block flex-1">
             <h1 className="font-bold text-base" style={{ fontFamily: "'Philosopher', serif", color: 'var(--text-dark)' }}>
               {navItems.find((n) => n.id === activeTab)?.label ?? 'Admin'}
             </h1>
           </div>
-          <div className="flex items-center gap-2">
+
+          {/* Mobile: current tab title (center) */}
+          <div className="flex-1 lg:hidden text-center">
+            <h1 className="font-bold text-sm truncate" style={{ fontFamily: "'Philosopher', serif", color: 'var(--text-dark)' }}>
+              {navItems.find((n) => n.id === activeTab)?.label ?? 'Admin'}
+            </h1>
+          </div>
+
+          <div className="flex items-center gap-1">
             <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               className="p-2 rounded-xl transition-colors" style={{ color: 'var(--text-medium)' }}
               onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(212,160,23,0.1)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}>
               {mounted ? (theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />) : <Moon size={18} />}
             </button>
-            <button className="p-2 rounded-xl transition-colors relative" style={{ color: 'var(--text-medium)' }}
+            <button className="hidden lg:flex p-2 rounded-xl transition-colors relative" style={{ color: 'var(--text-medium)' }}
               onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(212,160,23,0.1)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}>
               <Bell size={18} />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-400" />
             </button>
+            {/* Mobile: logout button */}
+            <button onClick={logout}
+              className="lg:hidden p-2 rounded-xl transition-colors" style={{ color: '#DC2626' }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(220,38,38,0.08)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}>
+              <LogOut size={17} />
+            </button>
           </div>
         </header>
 
-        <main className="flex-1 p-6">
+        {/* ── Mobile bottom navigation for admin ── */}
+        <nav className="fixed bottom-0 left-0 right-0 z-40 lg:hidden"
+          style={{
+            background: 'rgba(22,12,2,0.96)',
+            borderTop: '1px solid rgba(212,160,23,0.22)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            paddingBottom: 'env(safe-area-inset-bottom)',
+          }}>
+          <div className="flex items-center h-14">
+            {navItems.map(({ id, icon: Icon, label }) => {
+              const isActive = activeTab === id;
+              return (
+                <button key={id} onClick={() => setActiveTab(id)} className="flex-1 flex flex-col items-center justify-center gap-0.5 py-1.5">
+                  <div className="w-10 h-7 flex items-center justify-center rounded-full transition-all"
+                    style={isActive ? { background: 'rgba(212,160,23,0.18)' } : {}}>
+                    <Icon size={18} style={{ color: isActive ? '#D4A017' : 'rgba(212,160,23,0.38)' }} strokeWidth={isActive ? 2.2 : 1.8} />
+                  </div>
+                  <span className="text-[9px] font-semibold leading-none"
+                    style={{ color: isActive ? '#D4A017' : 'rgba(212,160,23,0.38)' }}>
+                    {label.slice(0, 8)}{label.length > 8 ? '…' : ''}
+                  </span>
+                </button>
+              );
+            })}
+            {/* Back to main site */}
+            <Link href="/dashboard" className="flex-1 flex flex-col items-center justify-center gap-0.5 py-1.5">
+              <div className="w-10 h-7 flex items-center justify-center rounded-full">
+                <Home size={18} style={{ color: 'rgba(212,160,23,0.38)' }} strokeWidth={1.8} />
+              </div>
+              <span className="text-[9px] font-semibold leading-none" style={{ color: 'rgba(212,160,23,0.38)' }}>
+                Web
+              </span>
+            </Link>
+          </div>
+        </nav>
+
+        <main className="flex-1 p-3 sm:p-6 pb-20 lg:pb-6">
           <AnimatePresence mode="wait">
 
             {/* ══ DASHBOARD ══ */}
