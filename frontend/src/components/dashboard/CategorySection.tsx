@@ -28,7 +28,7 @@ export default function CategorySection() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
         {topics.map((topic, i) => (
 
           <motion.div
@@ -44,7 +44,7 @@ export default function CategorySection() {
               tabIndex={0}
               onClick={() => router.push(`/quiz?parent=${topic.id}`)}
               onKeyDown={(e) => { if (e.key === 'Enter') router.push(`/quiz?parent=${topic.id}`); }}
-              className="card p-3.5 flex flex-col cursor-pointer hover:shadow-gold transition-all duration-200 group h-full"
+              className="card p-3 sm:p-3.5 flex flex-col cursor-pointer hover:shadow-gold transition-all duration-200 group h-full"
             >
               {/* Icon + tên chủ đề cha */}
               <div className="flex items-center gap-2.5 mb-3">

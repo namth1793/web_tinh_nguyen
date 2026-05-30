@@ -48,7 +48,7 @@ export default function QuizLevelPage() {
         </div>
 
         {/* Level cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
           {levels.map((level, i) => {
             const isSelected = selectedLevel === i;
             return (
@@ -59,7 +59,7 @@ export default function QuizLevelPage() {
                 transition={{ delay: i * 0.08 }}
                 whileHover={{ y: -6, transition: { duration: 0.18 } }}
                 onClick={() => setSelectedLevel(isSelected ? null : i)}
-                className="card p-5 flex flex-col items-center text-center cursor-pointer"
+                className="card p-3.5 sm:p-5 flex flex-col items-center text-center cursor-pointer"
                 style={{
                   borderColor: isSelected ? level.color + '80' : level.color + '25',
                   borderWidth: isSelected ? 2 : 1,
@@ -173,7 +173,7 @@ export default function QuizLevelPage() {
             </div>
 
             {filteredQuizzes.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {filteredQuizzes.map((quiz, i) => (
                   <QuizCard key={quiz.id} quiz={quiz} index={i} getLevelName={getLevelName} />
                 ))}

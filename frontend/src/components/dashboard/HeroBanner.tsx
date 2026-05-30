@@ -11,8 +11,8 @@ export default function HeroBanner() {
     <motion.div
       initial={{ opacity: 0, y: -12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative overflow-hidden rounded-3xl mb-6"
-      style={{ minHeight: 240 }}
+      className="relative overflow-hidden rounded-2xl sm:rounded-3xl mb-5"
+      style={{ minHeight: 190 }}
     >
       <div className="absolute inset-0"
         style={{ background: 'linear-gradient(135deg, #3D1C02 0%, #6B2F08 35%, #9A4D0F 65%, #B8860B 100%)' }}
@@ -36,7 +36,7 @@ export default function HeroBanner() {
         style={{ background: 'linear-gradient(90deg, transparent 0%, #D4A017 30%, #F5C842 50%, #D4A017 70%, transparent 100%)' }}
       />
 
-      <div className="relative z-10 flex items-center h-full p-7 lg:p-10 gap-6">
+      <div className="relative z-10 flex items-center h-full p-5 sm:p-7 lg:p-10 gap-6">
         <div className="flex-1 min-w-0">
           <motion.div
             initial={{ opacity: 0, x: -20 }}

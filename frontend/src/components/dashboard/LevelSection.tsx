@@ -33,7 +33,7 @@ export default function LevelSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.08 }}
             whileHover={{ y: -5, transition: { duration: 0.18 } }}
-            className="card p-4 flex flex-col items-center text-center cursor-pointer group"
+            className="card p-3 sm:p-4 flex flex-col items-center text-center cursor-pointer group"
             style={{ borderColor: level.color + '30' }}
           >
             <div

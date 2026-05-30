@@ -72,11 +72,11 @@ export default function QuizPage() {
               )}
             </div>
 
-            {/* Level filter */}
-            <div className="flex gap-1.5 flex-wrap">
+            {/* Level filter — horizontal scroll on mobile */}
+            <div className="flex gap-1.5 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none', flexShrink: 0 }}>
               <button
                 onClick={() => setSelectedLevel('')}
-                className={cn('px-3 py-1.5 rounded-xl text-xs font-medium transition-all', !selectedLevel ? 'bg-gold-500 text-white' : 'bg-cream-100 dark:bg-[#3A2A10] text-temple-medium hover:text-temple-dark')}
+                className={cn('px-3 py-1.5 rounded-xl text-xs font-medium transition-all flex-shrink-0', !selectedLevel ? 'bg-gold-500 text-white' : 'bg-cream-100 dark:bg-[#3A2A10] text-temple-medium hover:text-temple-dark')}
               >
                 {t.quiz.allLevels}
               </button>
@@ -84,7 +84,7 @@ export default function QuizPage() {
                 <button
                   key={l._viName}
                   onClick={() => setSelectedLevel(l._viName === selectedLevel ? '' : l._viName)}
-                  className={cn('px-3 py-1.5 rounded-xl text-xs font-medium transition-all', selectedLevel === l._viName ? 'text-white' : 'bg-cream-100 dark:bg-[#3A2A10] text-temple-medium hover:text-temple-dark')}
+                  className={cn('px-3 py-1.5 rounded-xl text-xs font-medium transition-all flex-shrink-0', selectedLevel === l._viName ? 'text-white' : 'bg-cream-100 dark:bg-[#3A2A10] text-temple-medium hover:text-temple-dark')}
                   style={selectedLevel === l._viName ? { backgroundColor: l.color } : {}}
                 >
                   {l.icon} {l.name}
@@ -93,8 +93,8 @@ export default function QuizPage() {
             </div>
           </div>
 
-          {/* Parent topic filter */}
-          <div className="flex gap-2 mt-3 flex-wrap">
+          {/* Parent topic filter — horizontal scroll on mobile */}
+          <div className="flex gap-2 mt-3 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none' }}>
             {topics.map((tp) => (
               <button
                 key={tp.id}
@@ -108,8 +108,9 @@ export default function QuizPage() {
                 )}
                 style={selectedParent === tp.id ? { backgroundColor: tp.color, borderColor: tp.color } : {}}
               >
-                {tp.icon} {tp.name}
-                {tp.children && <span className="ml-1 opacity-70">({tp.children.length})</span>}
+                <span className="flex-shrink-0">{tp.icon}</span>
+                <span className="whitespace-nowrap">{tp.name}</span>
+                {tp.children && <span className="opacity-70 flex-shrink-0">({tp.children.length})</span>}
               </button>
             ))}
           </div>

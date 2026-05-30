@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Sidebar, MobileSidebar } from './Sidebar';
 import Header from './Header';
 import RightSidebar from './RightSidebar';
+import MobileBottomNav from './MobileBottomNav';
 import { useApp } from '@/context/ThemeContext';
 
 interface MainLayoutProps {
@@ -19,7 +20,7 @@ export default function MainLayout({ children, showRightSidebar = true }: MainLa
       <Sidebar />
       <MobileSidebar />
 
-      {/* Offset main area — animates in sync with sidebar width */}
+      {/* ── Desktop layout ── */}
       <motion.div
         animate={{ paddingLeft: sidebarCollapsed ? 64 : 224 }}
         transition={{ duration: 0.25, ease: 'easeInOut' }}
@@ -39,20 +40,17 @@ export default function MainLayout({ children, showRightSidebar = true }: MainLa
         </div>
       </motion.div>
 
-      {/* Mobile layout (no sidebar offset) */}
+      {/* ── Mobile layout ── */}
       <div className="lg:hidden">
         <Header />
-        <div className="flex min-h-[calc(100vh-3.5rem)]">
-          <main className="flex-1 min-w-0 p-4">
-            {children}
-          </main>
-          {showRightSidebar && (
-            <div className="xl:w-72 flex-shrink-0 pt-4">
-              <RightSidebar />
-            </div>
-          )}
-        </div>
+        {/* pb-16 = space for bottom nav bar */}
+        <main className="min-w-0 px-3 pt-4 pb-20">
+          {children}
+        </main>
       </div>
+
+      {/* Mobile bottom navigation */}
+      <MobileBottomNav />
     </div>
   );
 }
