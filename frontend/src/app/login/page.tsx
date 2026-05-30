@@ -164,33 +164,6 @@ export default function LoginPage() {
               </p>
             </div>
 
-            {/* Demo accounts */}
-            <div className="mb-4 sm:mb-5">
-              <p className="text-xs text-temple-medium mb-2 font-medium">{t.login.demoLogin}</p>
-              <div className="flex gap-2">
-                {DEMO_ACCOUNTS.map((acc) => (
-                  <button
-                    key={acc.email}
-                    onClick={() => fillDemo(acc)}
-                    className="flex-1 flex items-center gap-2 px-3 py-2 rounded-xl border-2 border-cream-200 dark:border-[#3A2A10] hover:border-gold-400 hover:bg-gold-50 dark:hover:bg-gold-900/20 transition-all text-left"
-                  >
-                    <span className="text-xl flex-shrink-0">{acc.icon}</span>
-                    <div className="min-w-0">
-                      <p className="text-xs font-semibold text-temple-dark dark:text-cream-100 leading-tight">
-                        {DEMO_LABELS[acc.labelKey][lang]}
-                      </p>
-                      <p className="text-[10px] text-temple-medium truncate">{acc.email}</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 mb-4 sm:mb-5">
-              <hr className="flex-1 border-cream-200 dark:border-[#3A2A10]" />
-              <span className="text-xs text-temple-medium px-2">{t.login.orEmail}</span>
-              <hr className="flex-1 border-cream-200 dark:border-[#3A2A10]" />
-            </div>
 
             {/* Error */}
             {error && (
