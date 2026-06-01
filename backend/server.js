@@ -43,6 +43,13 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
+// Disable caching for all API responses
+app.use('/api', (req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  next();
+});
+
 // Init DB on startup
 initDatabase();
 

@@ -8,7 +8,7 @@ import {
   X, CheckCircle2, XCircle, Download, Clock, Star, BarChart3, Shield,
   ArrowUpRight, Bell, Moon, Sun, Save,
   ListOrdered, AlignLeft, Tag, HelpCircle,
-  Globe, Loader2, RefreshCw, Home, Menu,
+  Globe, Loader2, RefreshCw, Home,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
@@ -49,11 +49,6 @@ const mockResults = [
   { id: 12, userId: 8, userName: 'Huệ Tâm',   email: 'huetam@gmail.com',   quizId: 12,quizTitle: 'Trung Bộ Kinh – Kinh Căn Bản Pháp', level: 'Chuyên sâu',topic: 'Kinh',     score: 8,  total: 10, percent: 80,  passed: true,  date: '21/04/2024', duration: 28 },
 ];
 
-const SAMPLE_QUESTIONS: Question[] = [
-  { id: 1, question: 'Vô thường (Anicca) có nghĩa là gì?', option_a: 'Mọi thứ đều tốt đẹp', option_b: 'Mọi hiện tượng đều thay đổi và không bền vững', option_c: 'Cuộc sống là trường tồn', option_d: 'Chỉ con người mới thay đổi', correct_answer: 1, explanation: 'Vô thường là một trong Ba Pháp Ấn — mọi pháp hữu vi đều sinh diệt, biến đổi không ngừng.' },
-  { id: 2, question: 'Khổ (Dukkha) bao gồm mấy loại?', option_a: '2 loại', option_b: '3 loại', option_c: '4 loại', option_d: '5 loại', correct_answer: 1, explanation: 'Khổ gồm 3 loại: Khổ khổ (đau đớn trực tiếp), Hoại khổ (khổ do biến đổi) và Hành khổ (khổ vi tế do sự sinh diệt).' },
-  { id: 3, question: 'Vô ngã (Anattā) phủ nhận điều gì?', option_a: 'Phủ nhận sự tồn tại của thế giới', option_b: 'Phủ nhận ý nghĩa của cuộc sống', option_c: 'Phủ nhận sự tồn tại của một bản ngã thường hằng, bất biến', option_d: 'Phủ nhận nghiệp báo', correct_answer: 2, explanation: 'Vô ngã là giáo lý riêng biệt của Phật giáo — không có một "bản thân" hay "linh hồn" cố định, thường hằng.' },
-];
 
 type Tab = 'dashboard' | 'quizzes' | 'results' | 'users';
 
@@ -70,7 +65,13 @@ function QuestionForm({
   const { t } = useLang();
   const qf = t.admin.questionForm;
   const isEssay = quizType === 'tu_luan';
-  const [q, setQ] = useState<Partial<Question>>({ correct_answer: 0, ...question });
+  // DB stores 1-indexed (A=1,B=2,C=3,D=4). Form uses 0-indexed (A=0,B=1,C=2,D=3).
+  const [q, setQ] = useState<Partial<Question>>(() => {
+    const dbIdx = question.correct_answer;
+    // Convert 1-indexed DB value to 0-indexed form, default to 0 (A) for new questions
+    const formIdx = dbIdx !== undefined && dbIdx > 0 ? dbIdx - 1 : 0;
+    return { ...question, correct_answer: formIdx };
+  });
   const opts: Array<keyof Question> = ['option_a', 'option_b', 'option_c', 'option_d'];
   const labels = ['A', 'B', 'C', 'D'];
 
@@ -186,7 +187,8 @@ function QuestionForm({
             if (!isValid) return;
             const saved: Question = isEssay
               ? { ...q as Question, option_a: '', option_b: '', option_c: '', option_d: '', correct_answer: 0 }
-              : q as Question;
+              // Convert 0-indexed form value back to 1-indexed for DB (A=1, B=2, C=3, D=4)
+              : { ...q as Question, correct_answer: (q.correct_answer ?? 0) + 1 };
             onSave(saved);
           }}
           disabled={!isValid}
@@ -228,13 +230,14 @@ function QuestionCard({ q, index, onEdit, onDelete, quizType = 'trac_nghiem' }: 
             <div className="grid grid-cols-2 gap-1">
               {opts.map((opt, i) => (
                 <div key={i} className="flex items-center gap-1.5">
+                  {/* DB is 1-indexed: A=1,B=2,C=3,D=4. i is 0-indexed. */}
                   <span className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0"
-                    style={{ background: q.correct_answer === i ? '#D4A017' : 'rgba(212,160,23,0.12)', color: q.correct_answer === i ? '#fff' : '#B8860B' }}>
+                    style={{ background: q.correct_answer - 1 === i ? '#D4A017' : 'rgba(212,160,23,0.12)', color: q.correct_answer - 1 === i ? '#fff' : '#B8860B' }}>
                     {labels[i]}
                   </span>
-                  <span className={cn('text-[10px] truncate', q.correct_answer === i ? 'font-semibold' : '')}
-                    style={{ color: q.correct_answer === i ? '#B8860B' : 'var(--text-medium)' }}>{opt}</span>
-                  {q.correct_answer === i && <CheckCircle2 size={10} style={{ color: '#1A9362', flexShrink: 0 }} />}
+                  <span className={cn('text-[10px] truncate', q.correct_answer - 1 === i ? 'font-semibold' : '')}
+                    style={{ color: q.correct_answer - 1 === i ? '#B8860B' : 'var(--text-medium)' }}>{opt}</span>
+                  {q.correct_answer - 1 === i && <CheckCircle2 size={10} style={{ color: '#1A9362', flexShrink: 0 }} />}
                 </div>
               ))}
             </div>
@@ -677,7 +680,8 @@ function QuizModal({ quiz, onClose, onSave }: { quiz?: any; onClose: () => void;
                       <div className="space-y-3">
                         {langData.questions.map((tq, qi) => {
                           const orig = questions[qi];
-                          const corr = orig?.correct_answer ?? -1;
+                          // DB is 1-indexed; convert to 0-indexed for comparison with oi
+                          const corr = orig?.correct_answer != null ? orig.correct_answer - 1 : -1;
                           return (
                             <div key={qi} className="rounded-xl p-3.5 border"
                               style={{ borderColor: 'rgba(66,133,244,0.18)', background: 'rgba(66,133,244,0.03)' }}>

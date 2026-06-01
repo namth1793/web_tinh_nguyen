@@ -24,7 +24,7 @@ export function useApiQuizzes() {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`${API_BASE}/quizzes`)
+    fetch(`${API_BASE}/quizzes`, { cache: 'no-store' })
       .then((r) => r.json())
       .then((data) => { if (Array.isArray(data)) setRaw(data); })
       .catch(() => {})
@@ -60,8 +60,8 @@ export function useApiQuizDetail(quizId: number) {
     if (!quizId) return;
     setLoading(true);
     Promise.all([
-      fetch(`${API_BASE}/quizzes/${quizId}`).then((r) => r.json()),
-      fetch(`${API_BASE}/quizzes/${quizId}/questions`).then((r) => r.json()),
+      fetch(`${API_BASE}/quizzes/${quizId}`,           { cache: 'no-store' }).then((r) => r.json()),
+      fetch(`${API_BASE}/quizzes/${quizId}/questions`, { cache: 'no-store' }).then((r) => r.json()),
     ])
       .then(([qData, qsData]) => {
         setQuiz(qData);
