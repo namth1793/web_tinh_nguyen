@@ -111,6 +111,45 @@ function initDatabase() {
   // Migrations for existing databases
   try { db.exec("ALTER TABLE quizzes ADD COLUMN quiz_type TEXT DEFAULT 'trac_nghiem'"); } catch (_) {}
 
+  // Insert sub-topics (IDs 101–505) to match frontend mockTopics
+  const subTopicExists = db.prepare('SELECT id FROM topics WHERE id = 101').get();
+  if (!subTopicExists) {
+    db.exec(`
+      INSERT OR IGNORE INTO topics (id, name, slug, icon, color, question_count) VALUES
+      (101,'Luân hồi (Samsara)','luan-hoi','🔄','#D4A017',25),
+      (102,'Niết-bàn (Nibbāna)','niet-ban','✨','#D4A017',20),
+      (103,'Tam bảo: Phật – Pháp – Tăng','tam-bao','🔱','#D4A017',30),
+      (104,'Thập thiện nghiệp','thap-thien-nghiep','🌸','#D4A017',20),
+      (105,'Tứ niệm xứ','tu-niem-xu','🧿','#D4A017',25),
+      (106,'Ngũ uẩn','ngu-uan','⚗️','#D4A017',30),
+      (107,'Thập nhị nhân duyên','thap-nhi-nhan-duyen','⛓️','#D4A017',25),
+      (108,'Vô thường – Khổ – Vô ngã','vo-thuong-kho-vo-nga','🌊','#D4A017',25),
+      (201,'Trường Bộ Kinh','truong-bo-kinh','📜','#E8890B',25),
+      (202,'Trung Bộ Kinh','trung-bo-kinh','📜','#E8890B',25),
+      (203,'Tương Ưng Bộ Kinh','tuong-ung-bo-kinh','📜','#E8890B',20),
+      (204,'Tăng Chi Bộ Kinh','tang-chi-bo-kinh','📜','#E8890B',20),
+      (205,'Tiểu Bộ Kinh','tieu-bo-kinh','📜','#E8890B',20),
+      (206,'Trường A hàm','truong-a-ham','📚','#E8890B',15),
+      (207,'Trung A hàm','trung-a-ham','📚','#E8890B',15),
+      (208,'Tạp A hàm','tap-a-ham','📚','#E8890B',15),
+      (209,'Tăng nhất A hàm','tang-nhat-a-ham','📚','#E8890B',15),
+      (301,'Tại gia','tai-gia','🏠','#0ea5e9',30),
+      (302,'Sa di','sa-di','🪷','#0ea5e9',20),
+      (303,'Tỳ kheo','ty-kheo','🧘','#0ea5e9',25),
+      (304,'Sa di ni','sa-di-ni','🌺','#0ea5e9',15),
+      (305,'Thức xoa ma na','thuc-xoa-ma-na','☸️','#0ea5e9',15),
+      (306,'Tỳ kheo ni','ty-kheo-ni','🧘🏽','#0ea5e9',15),
+      (401,'Thiền chỉ (Samatha)','thien-chi','🕯️','#10b981',45),
+      (402,'Thiền quán (Vipassanā)','thien-quan','👁️','#10b981',45),
+      (501,'LS Phật Giáo Ấn Độ','ls-an-do','🪔','#8b5cf6',25),
+      (502,'LS Phật Giáo Sri Lanka','ls-sri-lanka','🌴','#8b5cf6',15),
+      (503,'LS Phật Giáo Trung Quốc','ls-trung-quoc','🏯','#8b5cf6',20),
+      (504,'LS Phật Giáo Việt Nam','ls-viet-nam','🇻🇳','#8b5cf6',25),
+      (505,'Cuộc đời Đức Phật Thích Ca','cuoc-doi-duc-phat','⭐','#8b5cf6',15)
+    `);
+    console.log('✅ Sub-topics inserted');
+  }
+
   seedData(db);
   console.log('✅ Database initialized');
 }
