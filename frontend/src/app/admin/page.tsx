@@ -619,6 +619,19 @@ function QuizModal({ quiz, onClose, onSave }: { quiz?: any; onClose: () => void;
                           />
                         </motion.div>
                       )}
+                      {!addingNew && questions.length > 0 && editingIdx === null && (
+                        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
+                          <button
+                            onClick={() => { setAddingNew(true); setEditingIdx(null); }}
+                            className="w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all border-2 border-dashed"
+                            style={{ borderColor: 'rgba(212,160,23,0.35)', color: '#B8860B', background: 'rgba(212,160,23,0.04)' }}
+                            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(212,160,23,0.1)'; e.currentTarget.style.borderColor = '#D4A017'; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(212,160,23,0.04)'; e.currentTarget.style.borderColor = 'rgba(212,160,23,0.35)'; }}
+                          >
+                            <Plus size={13} /> Thêm câu hỏi tiếp theo
+                          </button>
+                        </motion.div>
+                      )}
                     </div>
                   </>
                 )}
