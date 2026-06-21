@@ -52,100 +52,121 @@ router.get('/:id/questions', (req, res) => {
 
 // Create quiz
 router.post('/', (req, res) => {
-  const db = getDb();
-  const { title, description, topic_id, level, time_limit, quiz_type } = req.body;
-  if (!title) return res.status(400).json({ error: 'Tên bài thi là bắt buộc' });
+  try {
+    const db = getDb();
+    const { title, description, topic_id, level, time_limit, quiz_type } = req.body;
+    if (!title) return res.status(400).json({ error: 'Tên bài thi là bắt buộc' });
 
-  const result = db.prepare(`
-    INSERT INTO quizzes (title, description, topic_id, level, quiz_type, question_count, time_limit, is_active)
-    VALUES (?, ?, ?, ?, ?, 0, ?, 1)
-  `).run(title, description || null, topic_id || null, level || 'Cơ bản', quiz_type || 'trac_nghiem', time_limit || 15);
+    const safeLevel = ['Cơ bản', 'Trung cấp', 'Nâng cao', 'Chuyên sâu'].includes(level) ? level : 'Cơ bản';
 
-  const newQuiz = db.prepare(`
-    SELECT q.*, t.name as topic_name, t.icon as topic_icon, t.color as topic_color,
-           (SELECT COUNT(*) FROM questions WHERE quiz_id = q.id) as question_count
-    FROM quizzes q LEFT JOIN topics t ON q.topic_id = t.id
-    WHERE q.id = ?
-  `).get(result.lastInsertRowid);
+    const result = db.prepare(`
+      INSERT INTO quizzes (title, description, topic_id, level, quiz_type, question_count, time_limit, is_active)
+      VALUES (?, ?, ?, ?, ?, 0, ?, 1)
+    `).run(title, description || null, topic_id || null, safeLevel, quiz_type || 'trac_nghiem', time_limit || 15);
 
-  res.status(201).json(newQuiz);
+    const newQuiz = db.prepare(`
+      SELECT q.*, t.name as topic_name, t.icon as topic_icon, t.color as topic_color,
+             (SELECT COUNT(*) FROM questions WHERE quiz_id = q.id) as question_count
+      FROM quizzes q LEFT JOIN topics t ON q.topic_id = t.id
+      WHERE q.id = ?
+    `).get(result.lastInsertRowid);
+
+    res.status(201).json(newQuiz);
+  } catch (err) {
+    console.error('POST /quizzes error:', err);
+    res.status(500).json({ error: err.message || 'Lỗi server khi tạo bộ đề' });
+  }
 });
 
 // Update quiz metadata
 router.put('/:id', (req, res) => {
-  const db = getDb();
-  const { title, description, topic_id, level, time_limit, quiz_type } = req.body;
-  if (!title) return res.status(400).json({ error: 'Tên bài thi là bắt buộc' });
+  try {
+    const db = getDb();
+    const { title, description, topic_id, level, time_limit, quiz_type } = req.body;
+    if (!title) return res.status(400).json({ error: 'Tên bài thi là bắt buộc' });
 
-  const existing = db.prepare('SELECT id FROM quizzes WHERE id = ?').get(req.params.id);
-  if (!existing) return res.status(404).json({ error: 'Không tìm thấy bài thi' });
+    const existing = db.prepare('SELECT id FROM quizzes WHERE id = ?').get(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'Không tìm thấy bài thi' });
 
-  db.prepare(`
-    UPDATE quizzes SET title=?, description=?, topic_id=?, level=?, quiz_type=?, time_limit=?
-    WHERE id=?
-  `).run(title, description || null, topic_id || null, level || 'Cơ bản', quiz_type || 'trac_nghiem', time_limit || 15, req.params.id);
+    const safeLevel = ['Cơ bản', 'Trung cấp', 'Nâng cao', 'Chuyên sâu'].includes(level) ? level : 'Cơ bản';
 
-  const updated = db.prepare(`
-    SELECT q.*, t.name as topic_name, t.icon as topic_icon, t.color as topic_color,
-           (SELECT COUNT(*) FROM questions WHERE quiz_id = q.id) as question_count
-    FROM quizzes q LEFT JOIN topics t ON q.topic_id = t.id
-    WHERE q.id = ?
-  `).get(req.params.id);
+    db.prepare(`
+      UPDATE quizzes SET title=?, description=?, topic_id=?, level=?, quiz_type=?, time_limit=?
+      WHERE id=?
+    `).run(title, description || null, topic_id || null, safeLevel, quiz_type || 'trac_nghiem', time_limit || 15, req.params.id);
 
-  res.json(updated);
+    const updated = db.prepare(`
+      SELECT q.*, t.name as topic_name, t.icon as topic_icon, t.color as topic_color,
+             (SELECT COUNT(*) FROM questions WHERE quiz_id = q.id) as question_count
+      FROM quizzes q LEFT JOIN topics t ON q.topic_id = t.id
+      WHERE q.id = ?
+    `).get(req.params.id);
+
+    res.json(updated);
+  } catch (err) {
+    console.error('PUT /quizzes/:id error:', err);
+    res.status(500).json({ error: err.message || 'Lỗi server khi cập nhật bộ đề' });
+  }
 });
 
 // Soft-delete quiz
 router.delete('/:id', (req, res) => {
-  const db = getDb();
-  const existing = db.prepare('SELECT id FROM quizzes WHERE id = ?').get(req.params.id);
-  if (!existing) return res.status(404).json({ error: 'Không tìm thấy bài thi' });
+  try {
+    const db = getDb();
+    const existing = db.prepare('SELECT id FROM quizzes WHERE id = ?').get(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'Không tìm thấy bài thi' });
 
-  db.prepare('UPDATE quizzes SET is_active = 0 WHERE id = ?').run(req.params.id);
-  res.json({ success: true });
+    db.prepare('UPDATE quizzes SET is_active = 0 WHERE id = ?').run(req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('DELETE /quizzes/:id error:', err);
+    res.status(500).json({ error: err.message || 'Lỗi server khi xóa bộ đề' });
+  }
 });
 
 // Bulk replace questions for a quiz
 router.put('/:id/questions', (req, res) => {
-  const db = getDb();
-  const quizId = req.params.id;
-  const questions = req.body.questions;
+  try {
+    const db = getDb();
+    const quizId = req.params.id;
+    const questions = req.body.questions;
 
-  const existing = db.prepare('SELECT id FROM quizzes WHERE id = ?').get(quizId);
-  if (!existing) return res.status(404).json({ error: 'Không tìm thấy bài thi' });
+    const existing = db.prepare('SELECT id FROM quizzes WHERE id = ?').get(quizId);
+    if (!existing) return res.status(404).json({ error: 'Không tìm thấy bài thi' });
 
-  if (!Array.isArray(questions)) return res.status(400).json({ error: 'questions phải là mảng' });
+    if (!Array.isArray(questions)) return res.status(400).json({ error: 'questions phải là mảng' });
 
-  const upsert = db.transaction(() => {
-    // Delete all existing questions for this quiz
-    db.prepare('DELETE FROM questions WHERE quiz_id = ?').run(quizId);
+    const upsert = db.transaction(() => {
+      db.prepare('DELETE FROM questions WHERE quiz_id = ?').run(quizId);
 
-    // Insert new questions
-    const insert = db.prepare(`
-      INSERT INTO questions (quiz_id, question, option_a, option_b, option_c, option_d, correct_answer, explanation)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    for (const q of questions) {
-      insert.run(
-        quizId,
-        q.question,
-        q.option_a || '',
-        q.option_b || '',
-        q.option_c || '',
-        q.option_d || '',
-        q.correct_answer ?? 0,
-        q.explanation || null,
-      );
-    }
+      const insert = db.prepare(`
+        INSERT INTO questions (quiz_id, question, option_a, option_b, option_c, option_d, correct_answer, explanation)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      for (const q of questions) {
+        insert.run(
+          quizId,
+          q.question || '',
+          q.option_a || '',
+          q.option_b || '',
+          q.option_c || '',
+          q.option_d || '',
+          q.correct_answer ?? 0,
+          q.explanation || null,
+        );
+      }
 
-    // Update question_count on the quiz
-    db.prepare('UPDATE quizzes SET question_count = ? WHERE id = ?').run(questions.length, quizId);
-  });
+      db.prepare('UPDATE quizzes SET question_count = ? WHERE id = ?').run(questions.length, quizId);
+    });
 
-  upsert();
+    upsert();
 
-  const saved = db.prepare('SELECT * FROM questions WHERE quiz_id = ? ORDER BY id').all(quizId);
-  res.json({ success: true, questions: saved });
+    const saved = db.prepare('SELECT * FROM questions WHERE quiz_id = ? ORDER BY id').all(quizId);
+    res.json({ success: true, questions: saved });
+  } catch (err) {
+    console.error('PUT /:id/questions error:', err);
+    res.status(500).json({ error: err.message || 'Lỗi server khi lưu câu hỏi' });
+  }
 });
 
 module.exports = router;

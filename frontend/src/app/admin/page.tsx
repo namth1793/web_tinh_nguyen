@@ -1275,6 +1275,11 @@ export default function AdminPage() {
     setTimeout(() => setSaveToast(null), 3500);
   };
 
+  const safeJson = async (res: Response) => {
+    const text = await res.text();
+    try { return JSON.parse(text); } catch { throw new Error(`Server lỗi ${res.status} — kiểm tra console backend`); }
+  };
+
   const handleSaveQuiz = async (data: any) => {
     try {
       let savedQuiz: any;
@@ -1283,21 +1288,21 @@ export default function AdminPage() {
           method: 'PUT', headers: authHeaders,
           body: JSON.stringify({ title: data.title, description: data.description, topic_id: data.topic_id, level: data.level, time_limit: data.time_limit, quiz_type: data.quiz_type }),
         });
-        savedQuiz = await res.json();
+        savedQuiz = await safeJson(res);
         if (!res.ok) throw new Error(savedQuiz.error ?? 'Không thể cập nhật bộ đề');
       } else {
         const res = await fetch(`${API_BASE}/quizzes`, {
           method: 'POST', headers: authHeaders,
           body: JSON.stringify({ title: data.title, description: data.description, topic_id: data.topic_id, level: data.level, time_limit: data.time_limit, quiz_type: data.quiz_type }),
         });
-        savedQuiz = await res.json();
+        savedQuiz = await safeJson(res);
         if (!res.ok) throw new Error(savedQuiz.error ?? 'Không thể tạo bộ đề');
       }
       if (data.questions !== undefined) {
         const qRes = await fetch(`${API_BASE}/quizzes/${savedQuiz.id}/questions`, {
           method: 'PUT', headers: authHeaders, body: JSON.stringify({ questions: data.questions }),
         });
-        const qData = await qRes.json();
+        const qData = await safeJson(qRes);
         if (!qRes.ok) throw new Error(qData.error ?? 'Không thể lưu câu hỏi');
         savedQuiz = { ...savedQuiz, questions: qData.questions ?? data.questions, question_count: (qData.questions ?? data.questions).length };
       }
