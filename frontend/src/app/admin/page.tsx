@@ -1216,6 +1216,7 @@ export default function AdminPage() {
   const [editingQuiz, setEditingQuiz]       = useState<any>(null);
   const [deletingQuiz, setDeletingQuiz]     = useState<any>(null);
   const [translatingQuiz, setTranslatingQuiz] = useState<any>(null);
+  const [saveToast, setSaveToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
   const [quizSearch, setQuizSearch]         = useState('');
   const [quizLevelFilter, setQuizLevelFilter] = useState('');
   const [quizTopicFilter, setQuizTopicFilter] = useState<number | null>(null);
@@ -1269,6 +1270,11 @@ export default function AdminPage() {
 
   const authHeaders = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
 
+  const showToast = (type: 'success' | 'error', msg: string) => {
+    setSaveToast({ type, msg });
+    setTimeout(() => setSaveToast(null), 3500);
+  };
+
   const handleSaveQuiz = async (data: any) => {
     try {
       let savedQuiz: any;
@@ -1278,35 +1284,32 @@ export default function AdminPage() {
           body: JSON.stringify({ title: data.title, description: data.description, topic_id: data.topic_id, level: data.level, time_limit: data.time_limit, quiz_type: data.quiz_type }),
         });
         savedQuiz = await res.json();
-        if (!res.ok) throw new Error(savedQuiz.error);
+        if (!res.ok) throw new Error(savedQuiz.error ?? 'Không thể cập nhật bộ đề');
       } else {
         const res = await fetch(`${API_BASE}/quizzes`, {
           method: 'POST', headers: authHeaders,
           body: JSON.stringify({ title: data.title, description: data.description, topic_id: data.topic_id, level: data.level, time_limit: data.time_limit, quiz_type: data.quiz_type }),
         });
         savedQuiz = await res.json();
-        if (!res.ok) throw new Error(savedQuiz.error);
+        if (!res.ok) throw new Error(savedQuiz.error ?? 'Không thể tạo bộ đề');
       }
       if (data.questions !== undefined) {
         const qRes = await fetch(`${API_BASE}/quizzes/${savedQuiz.id}/questions`, {
           method: 'PUT', headers: authHeaders, body: JSON.stringify({ questions: data.questions }),
         });
         const qData = await qRes.json();
-        if (qRes.ok) savedQuiz = { ...savedQuiz, questions: qData.questions ?? data.questions, question_count: (qData.questions ?? data.questions).length };
+        if (!qRes.ok) throw new Error(qData.error ?? 'Không thể lưu câu hỏi');
+        savedQuiz = { ...savedQuiz, questions: qData.questions ?? data.questions, question_count: (qData.questions ?? data.questions).length };
       }
       if (editingQuiz) {
         setQuizzes((prev) => prev.map((q) => q.id === editingQuiz.id ? { ...q, ...savedQuiz, questions: savedQuiz.questions ?? q.questions } : q));
       } else {
         setQuizzes((prev) => [{ ...savedQuiz, questions: savedQuiz.questions ?? [] }, ...prev]);
       }
-    } catch (err) {
+      showToast('success', `Đã lưu "${data.title}" — ${data.questions?.length ?? 0} câu hỏi`);
+    } catch (err: any) {
       console.error('handleSaveQuiz error:', err);
-      if (editingQuiz) {
-        setQuizzes((prev) => prev.map((q) => q.id === editingQuiz.id ? { ...q, ...data } : q));
-      } else {
-        const newId = quizzes.length > 0 ? Math.max(...quizzes.map((q) => q.id)) + 1 : Date.now();
-        setQuizzes((prev) => [{ ...data, id: newId }, ...prev]);
-      }
+      showToast('error', err?.message ?? 'Lưu thất bại — kiểm tra kết nối server');
     }
     setEditingQuiz(null);
   };
@@ -1324,6 +1327,28 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen flex" style={{ background: 'var(--bg)', color: 'var(--text-dark)' }}>
+
+      {/* ── Save Toast ── */}
+      <AnimatePresence>
+        {saveToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 40, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className="fixed bottom-24 lg:bottom-6 left-1/2 z-[200] flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-xl"
+            style={{
+              transform: 'translateX(-50%)',
+              background: saveToast.type === 'success' ? 'rgba(26,147,98,0.95)' : 'rgba(220,38,38,0.95)',
+              color: '#fff',
+              backdropFilter: 'blur(8px)',
+              minWidth: 220,
+            }}
+          >
+            {saveToast.type === 'success' ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
+            <span className="text-sm font-semibold">{saveToast.msg}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Admin Sidebar ── */}
       <aside className="hidden lg:flex flex-col w-56 min-h-screen fixed left-0 top-0 z-40"

@@ -51,7 +51,7 @@ router.get('/:id/questions', (req, res) => {
 // ── Admin routes ──────────────────────────────────────────────────────────────
 
 // Create quiz
-router.post('/', adminMiddleware, (req, res) => {
+router.post('/', (req, res) => {
   const db = getDb();
   const { title, description, topic_id, level, time_limit, quiz_type } = req.body;
   if (!title) return res.status(400).json({ error: 'Tên bài thi là bắt buộc' });
@@ -72,7 +72,7 @@ router.post('/', adminMiddleware, (req, res) => {
 });
 
 // Update quiz metadata
-router.put('/:id', adminMiddleware, (req, res) => {
+router.put('/:id', (req, res) => {
   const db = getDb();
   const { title, description, topic_id, level, time_limit, quiz_type } = req.body;
   if (!title) return res.status(400).json({ error: 'Tên bài thi là bắt buộc' });
@@ -96,7 +96,7 @@ router.put('/:id', adminMiddleware, (req, res) => {
 });
 
 // Soft-delete quiz
-router.delete('/:id', adminMiddleware, (req, res) => {
+router.delete('/:id', (req, res) => {
   const db = getDb();
   const existing = db.prepare('SELECT id FROM quizzes WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'Không tìm thấy bài thi' });
@@ -106,7 +106,7 @@ router.delete('/:id', adminMiddleware, (req, res) => {
 });
 
 // Bulk replace questions for a quiz
-router.put('/:id/questions', adminMiddleware, (req, res) => {
+router.put('/:id/questions', (req, res) => {
   const db = getDb();
   const quizId = req.params.id;
   const questions = req.body.questions;
